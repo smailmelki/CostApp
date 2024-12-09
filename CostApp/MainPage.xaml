@@ -2,12 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:local="clr-namespace:CostApp"
              FlowDirection="RightToLeft"
              x:Class="CostApp.MainPage">
-    <ContentPage.BindingContext>
-        <local:MainPageViewModel />
-    </ContentPage.BindingContext>
 
     <ScrollView>
         <VerticalStackLayout Margin="20">
@@ -16,6 +12,14 @@
                 <Label Text="المجموع الكلي :" FontSize="Title"/>
                 <Label Text="{Binding GrandTotal, StringFormat=' {0:C} '}" FontSize="Title" />
             </HorizontalStackLayout>
+
+            <Grid ColumnDefinitions="100,120,55,55">
+                <Label Grid.Column="0" Text="العنصر" FontSize="20"/>
+                <Label Grid.Column="1" Text="التكلفة" FontSize="20" />
+                <Label Grid.Column="2" Text="اضافة" FontSize="20" />
+                <Label Grid.Column="3" Text="حذف" FontSize="20" />
+            </Grid>
+
             <!-- التكرار عبر جميع العناصر في القائمة -->
             <CollectionView ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
@@ -26,34 +30,35 @@
                                     <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
                                     <Label Grid.Column="1" Text="{Binding Total, StringFormat='{0:C}'}" FontSize="20" />
                                     <Button Grid.Column="2" Text="+" Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50" BackgroundColor="Green"/>
-                                    <Button Grid.Column="3" Text="x" Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50"  BackgroundColor="Red"/>
+                                    <Button Grid.Column="3" Text="x" Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50" BackgroundColor="Red"/>
                                 </Grid>
-
                             </toolkit:Expander.Header>
+
                             <toolkit:Expander.Content>
                                 <VerticalStackLayout>
                                     <CollectionView ItemsSource="{Binding Details}">
                                         <CollectionView.Header>
                                             <Grid ColumnDefinitions="105,105,55,55">
-                                                <Label Grid.Column="0" Text="Date"/>
-                                                <Label Grid.Column="1" Text="Amount"/>
+                                                <Label Grid.Column="0" Text="التاريخ"/>
+                                                <Label Grid.Column="1" Text="التكلفة"/>
                                                 <Label Grid.Column="2" Text="تعديل"/>
                                                 <Label Grid.Column="3" Text="حذف"/>
                                             </Grid>
                                         </CollectionView.Header>
+
                                         <CollectionView.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid ColumnDefinitions="100,100,55,55" RowSpacing="20">
-                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:yyyy-MM-dd}'}" HeightRequest="25"/>
+                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" HeightRequest="25"/>
                                                     <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" HeightRequest="25"/>
-                                                    <Button Grid.Column="2" x:Name="BtnEdit" Text="+" Clicked="BtnEdit_Clicked" CommandParameter="{Binding .}" 
+                                                    <Button Grid.Column="2" x:Name="SupBtnEdit" Text="+" CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"
                                                             Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50" BackgroundColor="Orange"/>
-                                                    <Button Grid.Column="3" x:Name="BtnDelete" Text="x" Clicked="BtnDelete_Clicked" CommandParameter="{Binding .}" 
-                                                            Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50"  BackgroundColor="Red"/>
+                                                    <Button Grid.Column="3" x:Name="SupBtnDelete" Text="x" CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"
+                                                            Padding="0" MinimumHeightRequest="20" HeightRequest="20" WidthRequest="50" BackgroundColor="Red"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </CollectionView.ItemTemplate>
-                                   </CollectionView>
+                                    </CollectionView>
                                 </VerticalStackLayout>
                             </toolkit:Expander.Content>
                         </toolkit:Expander>

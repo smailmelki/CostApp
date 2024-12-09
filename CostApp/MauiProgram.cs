@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using CostApp.Models;
 using Microsoft.Extensions.Logging;
 
 namespace CostApp
@@ -7,6 +8,9 @@ namespace CostApp
     {
         public static MauiApp CreateMauiApp()
         {
+            DBContext db = new DBContext();
+            //db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()

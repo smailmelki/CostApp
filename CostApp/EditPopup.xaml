@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CostApp.AddItem"
+             x:Class="CostApp.EditPopup"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}"
              Size="330,300">
@@ -16,8 +16,8 @@
             <Entry Grid.Column="1" Grid.Row="2" x:Name="txtNote" Placeholder="Note"/>
         </Grid>
         <HorizontalStackLayout>
-            <Button Text="save"/>
-            <Button Text="cancel"/>
+            <Button x:Name="BtnSave" Text="save" Clicked="OnSaveClicked"/>
+            <Button x:Name="BtnCancel" Text="cancel" Clicked="OnCancelClicked"/>
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </toolkit:Popup>
