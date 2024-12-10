@@ -5,19 +5,23 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}"
              Size="330,300">
-    <VerticalStackLayout>
-        <Label Text="Add New Item" HeightRequest="50" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
-        <Grid ColumnDefinitions="*,2*" RowDefinitions="50,50,50" Margin="20">
-            <Label Grid.Column="0" Grid.Row="0" Text="Amount"/>
-            <Label Grid.Column="0" Grid.Row="1" Text="Date"/>
-            <Label Grid.Column="0" Grid.Row="2" Text="Note"/>
-            <Entry Grid.Column="1" Grid.Row="0" x:Name="txtAmount" Placeholder="Amount"/>
-            <DatePicker Grid.Column="1" Grid.Row="1" x:Name="dtpDate"/>
-            <Entry Grid.Column="1" Grid.Row="2" x:Name="txtNote" Placeholder="Note"/>
+    <VerticalStackLayout Padding="10">
+        <Label Text="اضافة التكاليف" HeightRequest="50" FontSize="Title"
+               VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
+        <Grid ColumnDefinitions="*,3*" RowDefinitions="35,35,70" Margin="20" RowSpacing="7"
+              FlowDirection="RightToLeft">
+            <Label Grid.Column="0" Grid.Row="0" Text="المبلغ" VerticalTextAlignment="Center"/>
+            <Label Grid.Column="0" Grid.Row="1" Text="التاريخ" VerticalTextAlignment="Center"/>
+            <Label Grid.Column="0" Grid.Row="2" Text="ملاحظات"/>
+            <Entry Grid.Column="1" Grid.Row="0" x:Name="txtAmount" Placeholder="0,00"
+                   Margin="0" MinimumHeightRequest="35" HeightRequest="35" Keyboard="Numeric"/>
+            <DatePicker Grid.Column="1" Grid.Row="1" x:Name="dtpDate" 
+                        MinimumHeightRequest="35" HeightRequest="35"/>
+            <Editor Grid.Column="1" Grid.Row="2" x:Name="txtNote" Placeholder="Note"/>
         </Grid>
-        <HorizontalStackLayout>
-            <Button x:Name="BtnSave" Text="save" Clicked="OnSaveClicked"/>
-            <Button x:Name="BtnCancel" Text="cancel" Clicked="OnCancelClicked"/>
+        <HorizontalStackLayout Spacing="10">
+            <Button x:Name="BtnCancel" Text="الغاء" Clicked="OnCancelClicked" WidthRequest="70"/>
+            <Button x:Name="BtnSave" Text="حفظ" Clicked="OnSaveClicked" WidthRequest="70"/>
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </toolkit:Popup>

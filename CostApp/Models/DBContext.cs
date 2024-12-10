@@ -7,13 +7,15 @@ namespace CostApp.Models
     {
         public virtual DbSet<DetailItem> DetailItem { get; set; }
         public virtual DbSet<TreeItem> TreeItem { get; set; }
-
+       
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
 
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             optionsBuilder.UseSqlite($"Data Source={path}\\CostAppDB.db;");
+            //optionsBuilder.UseSqlServer("Server=.;Database=CostAppDB;Trusted_Connection=True;TrustServerCertificate = True;");
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,7 +31,6 @@ namespace CostApp.Models
                     .HasColumnName("id");
                 entity.Property(e => e.ParentID)
                     .IsRequired(true)
-                    .HasMaxLength(30)
                     .HasColumnName("ParentID");
                 entity.Property(e => e.Date)
                     .IsRequired(true)
@@ -38,6 +39,7 @@ namespace CostApp.Models
                     .IsRequired(true)
                     .HasColumnName("Amount");
                 entity.Property(e => e.Note)
+                    .HasMaxLength(30)
                     .HasColumnName("Note");
             });
 
@@ -50,8 +52,9 @@ namespace CostApp.Models
                     .HasColumnName("id");
                 entity.Property(e => e.Title)
                     .IsRequired(true)
-                    .HasMaxLength(30)
+                    .HasMaxLength(20)
                     .HasColumnName("Title");
+                entity.Ignore(p => p.Details);
                 entity.Ignore(p => p.Total);
             });
         }

@@ -5,11 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:CostApp"
     FlowDirection="LeftToRight"
-    Shell.FlyoutBehavior="Flyout"
+    Shell.FlyoutBehavior="Disabled"
     Title="CostApp">
 
     <ShellContent
-        Title="Home"
+        Title="برنامج حساب التكاليف"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
 
