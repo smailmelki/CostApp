@@ -42,10 +42,9 @@ namespace CostApp
             CollectionItemView.ItemsSource = Items;
             lblTotal.Text = (Items?.Sum(item => item.Total) ?? 0).ToString("C", new CultureInfo("ar-DZ"));
         }
-
         private async void SupBtnEdit_Clicked(object sender, EventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as ImageButton;
             if (button?.BindingContext is DetailItem detailItem)
             {
                 var popup = new EditPopup(detailItem);
@@ -63,7 +62,7 @@ namespace CostApp
 
         private async void SupBtnDelete_Clicked(object sender, EventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as ImageButton;
             if (button?.BindingContext is DetailItem detailItem)
             {
                 bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف العنصر ؟", "نعم", "لا");
@@ -93,27 +92,10 @@ namespace CostApp
             }
         }
 
-        private async void BtnAdd_Clicked(object sender, EventArgs e)
-        {
-             var button = sender as Button;
-            if (button?.BindingContext is TreeItem treeItem)
-            {
-                var popup = new EditPopup(treeItem);
-                var result = await this.ShowPopupAsync(popup);
-
-                if (result is DetailItem detailItem)
-                {
-                    db= new DBContext();
-                    db.DetailItem.Add(detailItem);
-                    db.SaveChanges();
-                    FillData();
-                }
-            }
-        }
 
         private async void BtnDelete_Clicked(object sender, EventArgs e)
         {
-            var button = sender as Button;
+            var button = sender as ImageButton;
             if (button?.BindingContext is TreeItem treeItem)
             {
                 bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف العنصر ؟ \n سيتم حذف كل العناصر المرتبطة به", "نعم", "لا");
@@ -126,6 +108,24 @@ namespace CostApp
                         db.SaveChanges();
                     }                     
                     db.TreeItem.Remove(treeItem);
+                    db.SaveChanges();
+                    FillData();
+                }
+            }
+        }
+
+        private async void BtnAdd_Clicked(object sender, EventArgs e)
+        {
+            var button = sender as ImageButton;
+            if (button?.BindingContext is TreeItem treeItem)
+            {
+                var popup = new EditPopup(treeItem);
+                var result = await this.ShowPopupAsync(popup);
+
+                if (result is DetailItem detailItem)
+                {
+                    db = new DBContext();
+                    db.DetailItem.Add(detailItem);
                     db.SaveChanges();
                     FillData();
                 }
