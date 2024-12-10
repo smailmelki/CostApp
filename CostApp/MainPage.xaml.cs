@@ -78,7 +78,7 @@ namespace CostApp
 
         private async void BtnAddItem_Clicked(object sender, EventArgs e)
         {
-            string result = await DisplayPromptAsync(title: "اضافة عنصر", message: "", accept: "حفظ", cancel: "الغاء", initialValue: treeItem?.Title);
+            string result = await DisplayPromptAsync(title: "اضافة عنصر", message: "", accept: "حفظ", cancel: "الغاء");
             if (!string.IsNullOrWhiteSpace(result))
             {
                 treeItem = new TreeItem
