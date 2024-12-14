@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Views;
 using CostApp.Models;
@@ -42,6 +44,21 @@ namespace CostApp
             CollectionItemView.ItemsSource = Items;
             lblTotal.Text = (Items?.Sum(item => item.Total) ?? 0).ToString("C", new CultureInfo("ar-DZ"));
         }
+
+        private async void ShowToast(string message)
+        {
+
+
+#if ANDROID || IOS
+            // إنشاء Toast
+            var toast = Toast.Make(message, ToastDuration.Short, 14); // 14 حجم الخط
+            // عرض Toast
+            await toast.Show();
+#else
+            await DisplayAlert("خطأ",message,"موافق");
+#endif
+        }
+
         private async void SupBtnEdit_Clicked(object sender, EventArgs e)
         {
             var button = sender as ImageButton;
@@ -81,6 +98,11 @@ namespace CostApp
             string result = await DisplayPromptAsync(title: "اضافة عنصر", message: "", accept: "حفظ", cancel: "الغاء");
             if (!string.IsNullOrWhiteSpace(result))
             {
+                if (db.TreeItem.Any(i=>i.Title==result))
+                {
+                    ShowToast("هذا العنصر موجود مسبقا !");
+                    return;
+                }
                 treeItem = new TreeItem
                 {
                     Title = result,

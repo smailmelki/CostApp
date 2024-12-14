@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CostApp.Models
 {
-    internal class DBContext : DbContext
+    public class DBContext : DbContext
     {
         public virtual DbSet<DetailItem> DetailItem { get; set; }
         public virtual DbSet<TreeItem> TreeItem { get; set; }

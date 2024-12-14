@@ -17,8 +17,8 @@
                 <Grid ColumnDefinitions="2*,3*,*,*">
                     <Label Grid.Column="0" Text="العنصر" FontSize="18" FontAttributes="Bold"/>
                     <Label Grid.Column="1" Text="التكلفة" FontSize="18" FontAttributes="Bold" />
-                    <Label Grid.Column="2" Text="اضافة" FontSize="16" FontAttributes="Bold" />
-                    <Label Grid.Column="3" Text="حذف" FontSize="16" FontAttributes="Bold" />
+                    <Label Grid.Column="2" Text="اضافة" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                    <Label Grid.Column="3" Text="حذف" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
                 </Grid>
 
                 <!-- التكرار عبر جميع العناصر في القائمة -->
@@ -30,38 +30,52 @@
                                     <Grid ColumnDefinitions="2*,3*,*,*" RowDefinitions="45">
                                         <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
                                         <Label Grid.Column="1" Text="{Binding Total, StringFormat='{0:C}'}" FontSize="20" />
-                                        <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" 
+                                        <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" HorizontalOptions="Center"
                                                 MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Green"/>
-                                        <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.jpg" Clicked="BtnDelete_Clicked" Padding="0" 
+                                        <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.jpg" Clicked="BtnDelete_Clicked" Padding="0" HorizontalOptions="Center"
                                                 MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Red"/>
                                     </Grid>
                                 </toolkit:Expander.Header>
 
                                 <toolkit:Expander.Content>
                                     <VerticalStackLayout>
+                                        
                                         <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
                                             <CollectionView.Header>
-                                                <Grid ColumnDefinitions="100,150,50,50" RowDefinitions="30">
-                                                    <Label Grid.Column="0" Text="التاريخ"/>
-                                                    <Label Grid.Column="1" Text="المبلغ"/>
-                                                    <Label Grid.Column="2" Text="تعديل"/>
-                                                    <Label Grid.Column="3" Text="حذف"/>
-                                                </Grid>
+                                                <FlexLayout Direction="Row" Padding="10" AlignItems="Center">
+                                                    <Label FlexLayout.Grow="1" Text="التاريخ" FontAttributes="Bold"/>
+                                                    <Label FlexLayout.Grow="1" Text="المبلغ" FontAttributes="Bold"/>
+                                                    <Label Text="تعديل" FontAttributes="Bold"/>
+                                                    <BoxView WidthRequest="15" HeightRequest="0"/>
+                                                    <Label Text="حذف" FontAttributes="Bold"/>
+                                                </FlexLayout>
                                             </CollectionView.Header>
+
+                                            <CollectionView.ItemsLayout>
+                                                <!-- التحكم بالمسافات بين العناصر -->
+                                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="3"/>
+                                            </CollectionView.ItemsLayout>
 
                                             <CollectionView.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Grid ColumnDefinitions="100,140,50,50" RowDefinitions="25" RowSpacing="30">
-                                                        <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}"/>
-                                                        <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}"/>
-                                                        <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"
-                                                            Padding="0" MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Orange"/>
-                                                        <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.jpg" CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"
-                                                            Padding="0" MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Red"/>
-                                                    </Grid>
+                                                    <!-- إضافة Margin حول كل عنصر -->
+                                                    <ContentView Margin="5" Padding="5" BackgroundColor="#f5f5f5">
+                                                        <FlexLayout Direction="Row" Padding="10" AlignItems="Center" JustifyContent="SpaceBetween">
+                                                            <Label Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" FlexLayout.Grow="1" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
+                                                            <Label Text="{Binding Amount, StringFormat='{0:C}'}" FlexLayout.Grow="1" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
+                                                            <ImageButton x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
+                                                                         CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"
+                                                                         Padding="5" BackgroundColor="Orange" CornerRadius="15"/>
+                                                            <BoxView WidthRequest="15" HeightRequest="0"/>
+                                                            <ImageButton x:Name="SupBtnDelete" Source="delete_icon.jpg" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
+                                                                         CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"
+                                                                         Padding="5" BackgroundColor="Red" CornerRadius="15"/>
+                                                        </FlexLayout>
+                                                    </ContentView>
                                                 </DataTemplate>
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>
+
                                     </VerticalStackLayout>
                                 </toolkit:Expander.Content>
                             </toolkit:Expander>
