@@ -50,10 +50,12 @@ namespace CostApp
 
 
 #if ANDROID || IOS
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
             // إنشاء Toast
             var toast = Toast.Make(message, ToastDuration.Short, 14); // 14 حجم الخط
             // عرض Toast
-            await toast.Show();
+            await toast.Show(cancellationTokenSource.Token);
 #else
             await DisplayAlert("خطأ",message,"موافق");
 #endif
