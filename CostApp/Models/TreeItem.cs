@@ -1,12 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace CostApp.Models
+﻿namespace CostApp.Models
 {
     public class TreeItem
     {
         public int ID { get; set; }
+        public string Title { get; set; }        
         public List<DetailItem>? Details { get; set; }
-        public string? Title { get; set; }        
         public decimal Total
         {
             get

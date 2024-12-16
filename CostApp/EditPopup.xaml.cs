@@ -49,10 +49,9 @@ namespace CostApp
             }
             else
             {
-                //CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                //string message = "ÌÃ» «œŒ«· ﬁÌ„… ’«·Õ… !";
-                //var toast = Toast.Make(message, ToastDuration.Short, 14); // «·—”«·…° «·„œ…° ÊÕÃ„ «·Œÿ
-                //await toast.Show(cancellationTokenSource.Token);
+                string message = "ÌÃ» «œŒ«· ﬁÌ„… ’«·Õ… !";
+                var toast = Toast.Make(message, ToastDuration.Short, 14); // «·—”«·…° «·„œ…° ÊÕÃ„ «·Œÿ
+                await toast.Show();
                 await CloseAsync(false);
             }
         }
