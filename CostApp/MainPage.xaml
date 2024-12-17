@@ -14,7 +14,7 @@
                     <Label x:Name="lblTotal" FontSize="Title" BackgroundColor="Gray"/>
                 </HorizontalStackLayout>
 
-                <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35",>
+                <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35">
                     <Label Grid.Column="0" Text="العنصر" FontSize="18" FontAttributes="Bold"/>
                     <Label Grid.Column="1" Text="التكلفة" FontSize="18" FontAttributes="Bold" />
                     <Label Grid.Column="2" Text="اضافة" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
