@@ -155,6 +155,30 @@ namespace CostApp
                 }
             }
         }
+
+        private async void ToolbarItem_Clicked(object sender, EventArgs e)
+        {
+            if (BottomSheetBorder.IsVisible == false)
+            {
+                BottomSheetBorder.IsVisible = true; // إظهار Border
+                await BottomSheetBorder.TranslateTo(0, 0, 300, Easing.CubicOut); // تحريك لأعلى
+            }
+            else
+            {
+                await BottomSheetBorder.TranslateTo(0, 300, 300, Easing.CubicIn); // تحريك لأسفل
+                BottomSheetBorder.IsVisible = false; // إخفاء Border
+            }           
+        }
+
+        private void btnBackUp_Clicked(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnRestor_Clicked(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 

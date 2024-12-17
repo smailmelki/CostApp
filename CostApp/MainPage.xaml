@@ -4,8 +4,13 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              FlowDirection="RightToLeft"
              x:Class="CostApp.MainPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="اعدادات"
+                     Clicked="ToolbarItem_Clicked"
+                     Order="Secondary"/>
+    </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="*, Auto" Padding="5">
+    <Grid RowDefinitions="*, Auto, Auto" Padding="5">
         <ScrollView Grid.Row="0">
             <VerticalStackLayout Margin="20">
                 <!-- المجموع الكلي -->
@@ -86,6 +91,21 @@
             </VerticalStackLayout>
         </ScrollView>
         <Button Grid.Row="1" x:Name="BtnAddItem" Text="اضافة عنصر جديد" Clicked="BtnAddItem_Clicked"/>
+        <!-- الـ Border الذي يحتوي على ContentView -->
+        <Border Grid.Row="2" 
+                x:Name="BottomSheetBorder"
+                Stroke="Gray"
+                Padding="3"
+                IsVisible="False" 
+                TranslationY="300">            
+            <!-- محتوى الـ Bottom Sheet -->
+            <ContentView BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}">
+                <Grid ColumnDefinitions="150,150" HorizontalOptions="Center" ColumnSpacing="20">
+                    <Button Grid.Column="0" x:Name="btnBackUp" Text="BackUp" Clicked="btnBackUp_Clicked"/>
+                    <Button Grid.Column="1" x:Name="btnRestor" Text="Restor" Clicked="btnRestor_Clicked"/>
+                </Grid>
+            </ContentView>
+        </Border>
     </Grid>
 
 </ContentPage> 
