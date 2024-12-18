@@ -158,16 +158,33 @@ namespace CostApp
 
         private async void ToolbarItem_Clicked(object sender, EventArgs e)
         {
-            if (BottomSheetBorder.IsVisible == false)
+            if (BottomSheetBorder.IsVisible)
             {
-                BottomSheetBorder.IsVisible = true; // إظهار Border
-                await BottomSheetBorder.TranslateTo(0, 0, 300, Easing.CubicOut); // تحريك لأعلى
+                // إخفاء الـ Bottom Sheet
+                await BottomSheetBorder.TranslateTo(0, 200, 300, Easing.CubicInOut); // انتقال للأسفل
+                await BottomSheetBorder.FadeTo(0, 200); // تقليل الشفافية
+                BottomSheetBorder.IsVisible = false; // إخفاء المكون
             }
             else
             {
-                await BottomSheetBorder.TranslateTo(0, 300, 300, Easing.CubicIn); // تحريك لأسفل
-                BottomSheetBorder.IsVisible = false; // إخفاء Border
-            }           
+                // إظهار الـ Bottom Sheet
+                BottomSheetBorder.IsVisible = true; // إظهار المكون
+                await BottomSheetBorder.TranslateTo(0, 0, 300, Easing.CubicInOut); // انتقال للأعلى
+                await BottomSheetBorder.FadeTo(1, 200); // زيادة الشفافية
+            }
+
+            // عكس الحالة
+            //isBottomSheetVisible = !isBottomSheetVisible;
+            //if (BottomSheetBorder.IsVisible == false)
+            //{
+            //    BottomSheetBorder.IsVisible = true; // إظهار Border
+            //    await BottomSheetBorder.TranslateTo(0, 0, 300, Easing.CubicOut); // تحريك لأعلى
+            //}
+            //else
+            //{
+            //    await BottomSheetBorder.TranslateTo(0, 300, 300, Easing.CubicIn); // تحريك لأسفل
+            //    BottomSheetBorder.IsVisible = false; // إخفاء Border
+            //}           
         }
 
         private void btnBackUp_Clicked(object sender, EventArgs e)
