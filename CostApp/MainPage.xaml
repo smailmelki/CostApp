@@ -17,7 +17,7 @@
                     <!-- المجموع الكلي -->
                     <HorizontalStackLayout Padding="0,0,0,10">
                         <Label Text="المجموع الكلي : " FontSize="Title"/>
-                        <Label x:Name="lblTotal" FontSize="Title" BackgroundColor="Gray"/>
+                        <Label x:Name="lblTotal" FontSize="Title" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}"/>
                     </HorizontalStackLayout>
 
                     <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35">
@@ -48,6 +48,7 @@
                                     </toolkit:Expander.Header>
 
                                     <toolkit:Expander.Content>
+                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}">
                                         <VerticalStackLayout>
 
                                             <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
@@ -70,20 +71,23 @@
                                                     <DataTemplate>
                                                         <!-- إضافة Margin حول كل عنصر -->
                                                         <ContentView Margin="1" Padding="1">
-                                                            <Grid ColumnDefinitions="120,120,50,50" RowDefinitions="25">
-                                                                <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
-                                                                <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
-                                                                <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                         CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"/>
-                                                                <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                         CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"/>
-                                                            </Grid>
+                                                            
+                                                                <Grid ColumnDefinitions="120,120,50,50" RowDefinitions="25">
+                                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
+                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
+                                                                    <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"/>
+                                                                    <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"/>
+                                                                </Grid>
+                                                            
                                                         </ContentView>
                                                     </DataTemplate>
                                                 </CollectionView.ItemTemplate>
                                             </CollectionView>
 
                                         </VerticalStackLayout>
+                                        </Border>
                                     </toolkit:Expander.Content>
                                 </toolkit:Expander>
                             </DataTemplate>
@@ -96,18 +100,45 @@
 
         <!-- الـ Border الذي يحتوي على ContentView -->
         <Border AbsoluteLayout.LayoutFlags="PositionProportional"
-                AbsoluteLayout.LayoutBounds="0.5, 1, 200, 200" 
-                x:Name="BottomSheetBorder"
-                Stroke="Gray"
-                Padding="3"
-                IsVisible="False" 
-                >
+        AbsoluteLayout.LayoutBounds="0.5, 1, 350, 100"
+        x:Name="BottomSheetBorder"
+        Stroke="Gray"
+        Padding="3"
+        IsVisible="False">
             <!-- محتوى الـ Bottom Sheet -->
             <ContentView BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}">
-                <Grid ColumnDefinitions="*,*" RowDefinitions="40" HorizontalOptions="Center" ColumnSpacing="20">
-                    <Button Grid.Column="0" x:Name="btnBackUp" Text="BackUp" Clicked="btnBackUp_Clicked"/>
-                    <Button Grid.Column="1" x:Name="btnRestor" Text="Restor" Clicked="btnRestor_Clicked"/>
-                </Grid>
+                <AbsoluteLayout >
+                    <Grid ColumnDefinitions="100, 100"
+                          Padding="3"
+                          RowDefinitions="Auto"
+                          ColumnSpacing="20"
+                          AbsoluteLayout.LayoutBounds="0.5, 1"
+                          AbsoluteLayout.LayoutFlags="PositionProportional">
+
+                        <Button Grid.Column="0"
+                                Grid.Row="1"
+                                x:Name="btnBackUp"
+                                Text="نسخ احتياطي"
+                                Clicked="btnBackUp_Clicked"/>
+                        <Button Grid.Column="1"
+                                Grid.Row="1"
+                                x:Name="btnRestor"
+                                Text="استعادة"
+                                Clicked="btnRestor_Clicked"/>
+                    </Grid>
+                    <Button x:Name="btnClose"
+                            Text="X"
+                            Padding="0"
+                            Clicked="CloseBottomSheet_Clicked"
+                            BackgroundColor="Gray"
+                            TextColor="White"
+                            BorderWidth="1"
+                            BorderColor="Gray"
+                            WidthRequest="25"
+                            HeightRequest="25"
+                            AbsoluteLayout.LayoutBounds="0, 0, 30, 30"
+                            AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                </AbsoluteLayout>
             </ContentView>
         </Border>
     </AbsoluteLayout>
