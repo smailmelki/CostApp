@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using CommunityToolkit.Maui.Storage;
 using Microsoft.Data.Sqlite;
+using CostApp;
 
 public static class SqliteBackupManager
 {
@@ -26,7 +27,7 @@ public static class SqliteBackupManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"خطأ أثناء استعادة قاعدة البيانات: {ex.Message}");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء استعادة قاعدة البيانات: {ex.Message}", "موافق");
             return false;
         }
     }
@@ -44,19 +45,21 @@ public static class SqliteBackupManager
             {
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
                 {
-                    { DevicePlatform.WinUI, new[] { "db" } },
+                    { DevicePlatform.WinUI, new[] { "db"} },
                     { DevicePlatform.Android, new[] { "*/*" } },
                     { DevicePlatform.iOS, new[] { "db" } },
                     { DevicePlatform.MacCatalyst, new[] { "db" } }
                 }),
-                PickerTitle = "اختر ملف النسخة الاحتياطية"
+                PickerTitle = "اختر ملف النسخة الاحتياطية",
             });
 
+            if (result == null)
+                return null;
             return result.FullPath;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"خطأ أثناء اختيار ملف النسخة الاحتياطية: {ex.Message}");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء اختيار ملف النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
     }
@@ -102,23 +105,23 @@ public static class SqliteBackupManager
                 sourceConnection.BackupDatabase(destinationConnection);
             }
 
-            //Console.WriteLine($"تم إنشاء النسخة الاحتياطية بنجاح في {backupFilePath}");
+            //await App.Current.MainPage.DisplayAlert("خطأ",$"تم إنشاء النسخة الاحتياطية بنجاح في {backupFilePath}");
             return backupFilePath;
         }
         catch (SqliteException ex)
         {
-            Console.WriteLine($"خطأ SQLite أثناء إنشاء النسخة الاحتياطية: {ex.Message} (ErrorCode: {ex.SqliteErrorCode})");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ SQLite أثناء إنشاء النسخة الاحتياطية: {ex.Message} (ErrorCode: {ex.SqliteErrorCode})", "موافق");
             // يمكنك هنا معالجة أخطاء SQLite بشكل أكثر تحديدًا بناءً على رمز الخطأ
             return null; // ارجع null للإشارة إلى الفشل
         }
         catch (IOException ex)
         {
-            Console.WriteLine($"خطأ إدخال/إخراج أثناء إنشاء النسخة الاحتياطية: {ex.Message}");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ إدخال/إخراج أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"خطأ غير متوقع أثناء إنشاء النسخة الاحتياطية: {ex.Message}");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ غير متوقع أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
     }
@@ -145,7 +148,7 @@ public static class SqliteBackupManager
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"خطأ أثناء اختيار مجلد النسخ الاحتياطي: {ex.Message}");
+            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء اختيار مجلد النسخ الاحتياطي: {ex.Message}", "موافق");                    
             return null;
         }
     }
