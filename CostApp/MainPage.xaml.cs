@@ -6,8 +6,6 @@ using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Views;
 using CostApp.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Maui.Storage;
 
 namespace CostApp
 {
@@ -196,21 +194,21 @@ namespace CostApp
             string? backupPath = await SqliteBackupManager.PickBackupFolderAsync();
             if (string.IsNullOrEmpty(backupPath))
             {
-                await DisplayAlert("Error", "Backup location not selected.", "OK");
+                await DisplayAlert("خطأ", "لم يتم اختيار مكان لحفظ نسخة من قاعدة البيانات ...", "موافق");
                 return;
             }
-            using (var context = new DBContext()) // Replace YourDbContext with your actual DbContext class
+            using (var context = new DBContext())
             {
                 string databasePath = context.Database.GetDbConnection().DataSource;
-                string? backupFilePath = await DatabaseBackup.BackupDatabaseAsync(databasePath, backupPath);
+                string? backupFilePath = await SqliteBackupManager.BackupDatabaseAsync(databasePath, backupPath);
 
                 if (backupFilePath != null)
                 {
-                    await DisplayAlert("Info", "Backup operation is successful", "OK");
+                    await DisplayAlert("نسخ قاعدة البيانات", "تم انشاء نسخة من قاعدة البيانات", "موافق");
                 }
                 else
                 {
-                    await DisplayAlert("Error", "Backup operation has failed.", "OK");
+                    await DisplayAlert("خطأ", "خطأ في انشاء نسخة من قاعدة البيانات.", "موافق");
                 }
             }
         }
