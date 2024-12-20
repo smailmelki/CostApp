@@ -5,6 +5,9 @@ using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Maui.Views;
 using CostApp.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Maui.Storage;
 
 namespace CostApp
 {
@@ -25,6 +28,8 @@ namespace CostApp
 
         private void FillData()
         {
+            try
+            {           
             // تهيئة البيانات
             Items = (from i in db.TreeItem
                      select new TreeItem
@@ -43,6 +48,11 @@ namespace CostApp
                      }).ToObservableCollection();
             CollectionItemView.ItemsSource = Items;
             lblTotal.Text = (Items?.Sum(item => item.Total) ?? 0).ToString("C", new CultureInfo("ar-DZ"));
+            }
+            catch (Exception)
+            {
+                ShowToast("حدث خطأ ما !");
+            }
         }
 
         private async void ShowToast(string message)
@@ -180,15 +190,63 @@ namespace CostApp
             BottomSheetBorder.IsVisible = false; // إخفاء المكون
         }
 
-        private void btnBackUp_Clicked(object sender, EventArgs e)
+        private async void btnBackUp_Clicked(object sender, EventArgs e)
         {
-
+            //Get user to pick backup location
+            string? backupPath = await SqliteBackupManager.PickBackupFolderAsync();
+            if (string.IsNullOrEmpty(backupPath))
+            {
+                await DisplayAlert("Error", "Backup location not selected.", "OK");
+                return;
+            }
+            using (var context = new DBContext()) // Replace YourDbContext with your actual DbContext class
+            {
+                bool success = await SqliteBackupManager.BackupDatabaseAsync(context, backupPath);
+                if (success)
+                {
+                    // The database backup is complete.
+                    //You can display a success message to the user
+                    await DisplayAlert("Info", "Backup operation is successful", "OK");
+                }
+                else
+                {
+                    // The database backup operation has failed.
+                    // You should inform the user.
+                    await DisplayAlert("Error", "Backup operation has failed.", "OK");
+                }
+            }
         }
 
-        private void btnRestor_Clicked(object sender, EventArgs e)
+        private async void btnRestor_Clicked(object sender, EventArgs e)
         {
+            // اختيار ملف النسخة الاحتياطية
+            var backupPath = await SqliteBackupManager.PickBackupFileAsync();
+            if (string.IsNullOrEmpty(backupPath))
+            {
+                await DisplayAlert("خطأ", "لم يتم العثور على قاعدة البيانات الاحتياطية.", "موافق");
+                return;
+            }
 
-        }
+            try
+            {
+                // فتح الملف كتيار بيانات
+                using var dbFileStream = File.OpenRead(backupPath);
+                // استعادة قاعدة البيانات
+                if (await SqliteBackupManager.RestoreBdFileAsync(dbFileStream, db))
+                {
+                    FillData();
+                    await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات بنجاح.", "موافق");
+                }
+                else
+                {
+                    await DisplayAlert("خطأ", "فشلت عملية استعادة قاعدة البيانات.", "موافق");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("خطأ", $"حدث خطأ أثناء استعادة قاعدة البيانات: {ex.Message}", "موافق");
+            }
+        }       
     }
 }
 
