@@ -201,17 +201,15 @@ namespace CostApp
             }
             using (var context = new DBContext()) // Replace YourDbContext with your actual DbContext class
             {
-                bool success = await SqliteBackupManager.BackupDatabaseAsync(context, backupPath);
-                if (success)
+                string databasePath = context.Database.GetDbConnection().DataSource;
+                string? backupFilePath = await DatabaseBackup.BackupDatabaseAsync(databasePath, backupPath);
+
+                if (backupFilePath != null)
                 {
-                    // The database backup is complete.
-                    //You can display a success message to the user
                     await DisplayAlert("Info", "Backup operation is successful", "OK");
                 }
                 else
                 {
-                    // The database backup operation has failed.
-                    // You should inform the user.
                     await DisplayAlert("Error", "Backup operation has failed.", "OK");
                 }
             }
