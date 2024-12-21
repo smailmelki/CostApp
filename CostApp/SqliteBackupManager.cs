@@ -27,7 +27,6 @@ public static class SqliteBackupManager
         }
         catch (Exception ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء استعادة قاعدة البيانات: {ex.Message}", "موافق");
             return false;
         }
     }
@@ -59,7 +58,6 @@ public static class SqliteBackupManager
         }
         catch (Exception ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء اختيار ملف النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
     }
@@ -101,27 +99,26 @@ public static class SqliteBackupManager
             {
                 await sourceConnection.OpenAsync();
                 await destinationConnection.OpenAsync();
-
                 sourceConnection.BackupDatabase(destinationConnection);
             }
 
-            //await App.Current.MainPage.DisplayAlert("خطأ",$"تم إنشاء النسخة الاحتياطية بنجاح في {backupFilePath}");
+            await DialogService.DisplayAlertAsync("info",$"تم إنشاء النسخة الاحتياطية بنجاح في \n{backupFilePath}","موافق");
             return backupFilePath;
         }
         catch (SqliteException ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ SQLite أثناء إنشاء النسخة الاحتياطية: {ex.Message} (ErrorCode: {ex.SqliteErrorCode})", "موافق");
+            await DialogService.DisplayAlertAsync("خطأ", $"خطأ SQLite أثناء إنشاء النسخة الاحتياطية: {ex.Message} (ErrorCode: {ex.SqliteErrorCode})", "موافق");
             // يمكنك هنا معالجة أخطاء SQLite بشكل أكثر تحديدًا بناءً على رمز الخطأ
             return null; // ارجع null للإشارة إلى الفشل
         }
         catch (IOException ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ إدخال/إخراج أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
+            await DialogService.DisplayAlertAsync("خطأ", $"خطأ إدخال/إخراج أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
         catch (Exception ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ غير متوقع أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
+            await DialogService.DisplayAlertAsync("خطأ", $"خطأ غير متوقع أثناء إنشاء النسخة الاحتياطية: {ex.Message}", "موافق");
             return null;
         }
     }
@@ -148,7 +145,7 @@ public static class SqliteBackupManager
         }
         catch (Exception ex)
         {
-            await App.Current.MainPage.DisplayAlert("خطأ", $"خطأ أثناء اختيار مجلد النسخ الاحتياطي: {ex.Message}", "موافق");                    
+            await DialogService.DisplayAlertAsync("خطأ", $"خطأ أثناء اختيار مجلد النسخ الاحتياطي: {ex.Message}", "موافق");                    
             return null;
         }
     }
