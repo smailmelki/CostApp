@@ -41,9 +41,9 @@
                                             <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
                                             <Label Grid.Column="1" Text="{Binding Total, StringFormat='{0:C}'}" FontSize="20" />
                                             <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" HorizontalOptions="Center"
-                                                MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20"/>
+                                                MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Transparent"/>
                                             <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.png" Clicked="BtnDelete_Clicked" Padding="0" HorizontalOptions="Center"
-                                                MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20"/>
+                                                MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Transparent"/>
                                         </Grid>
                                     </toolkit:Expander.Header>
 
@@ -54,7 +54,7 @@
                                             <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
 
                                                 <CollectionView.Header>
-                                                    <Grid ColumnDefinitions="120,120,50,50" RowDefinitions="25">
+                                                    <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
                                                         <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold"/>
                                                         <Label Grid.Column="1"  Text="المبلغ" FontAttributes="Bold"/>
                                                         <Label Grid.Column="2" Text="تعديل" FontAttributes="Bold" HorizontalOptions="Center"/>
@@ -72,13 +72,13 @@
                                                         <!-- إضافة Margin حول كل عنصر -->
                                                         <ContentView Margin="1" Padding="1">
                                                             
-                                                                <Grid ColumnDefinitions="120,120,50,50" RowDefinitions="25">
+                                                                <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
                                                                     <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
                                                                     <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
                                                                     <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                             CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked"/>
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked" BackgroundColor="Transparent"/>
                                                                     <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                             CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked"/>
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked" BackgroundColor="Transparent"/>
                                                                 </Grid>
                                                             
                                                         </ContentView>

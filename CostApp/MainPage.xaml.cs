@@ -227,16 +227,28 @@ namespace CostApp
             {
                 // فتح الملف كتيار بيانات
                 using var dbFileStream = File.OpenRead(backupPath);
-                // استعادة قاعدة البيانات
-                if (await SqliteBackupManager.RestoreBdFileAsync(dbFileStream, db))
+                ///////////////////////////////
+                string? originalDb = db.Database.GetDbConnection().DataSource; // مسار قاعدة البيانات الأصلية
+
+                if (SchemaComparer.CompareSchemas(originalDb, backupPath))
                 {
-                    FillData();
-                    await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات بنجاح.", "موافق");
+                    // استعادة قاعدة البيانات
+                    if (await SqliteBackupManager.RestoreBdFileAsync(dbFileStream, db))
+                    {
+                        FillData();
+                        await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات بنجاح.", "موافق");
+                    }
+                    else
+                    {
+                        await DisplayAlert("خطأ", "فشلت عملية استعادة قاعدة البيانات.", "موافق");
+                    }
                 }
                 else
                 {
-                    await DisplayAlert("خطأ", "فشلت عملية استعادة قاعدة البيانات.", "موافق");
+                    await DisplayAlert("خطأ", "بنية قاعدة البيانات مختلفة.", "موافق");
                 }
+                ///////////////////////////////
+             
             }
             catch (Exception ex)
             {

@@ -25,7 +25,7 @@ public static class SqliteBackupManager
             await dbFileStream.CopyToAsync(fs);
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
@@ -56,7 +56,7 @@ public static class SqliteBackupManager
                 return null;
             return result.FullPath;
         }
-        catch (Exception ex)
+        catch (Exception )
         {
             return null;
         }
