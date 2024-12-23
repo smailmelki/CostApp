@@ -49,44 +49,44 @@
 
                                     <toolkit:Expander.Content>
                                         <Border BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}">
-                                        <VerticalStackLayout>
+                                            <VerticalStackLayout>
 
-                                            <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
+                                                <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
 
-                                                <CollectionView.Header>
-                                                    <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
-                                                        <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold"/>
-                                                        <Label Grid.Column="1"  Text="المبلغ" FontAttributes="Bold"/>
-                                                        <Label Grid.Column="2" Text="تعديل" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                        <Label Grid.Column="3" Text="حذف" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                                    </Grid>
-                                                </CollectionView.Header>
+                                                    <CollectionView.Header>
+                                                        <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
+                                                            <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
+                                                            <Label Grid.Column="1"  Text="المبلغ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
+                                                            <Label Grid.Column="2" Text="تعديل" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
+                                                            <Label Grid.Column="3" Text="حذف" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
+                                                        </Grid>
+                                                    </CollectionView.Header>
 
-                                                <CollectionView.ItemsLayout>
-                                                    <!-- التحكم بالمسافات بين العناصر -->
-                                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
-                                                </CollectionView.ItemsLayout>
+                                                    <CollectionView.ItemsLayout>
+                                                        <!-- التحكم بالمسافات بين العناصر -->
+                                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                                                    </CollectionView.ItemsLayout>
 
-                                                <CollectionView.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <!-- إضافة Margin حول كل عنصر -->
-                                                        <ContentView Margin="1" Padding="1">
-                                                            
+                                                    <CollectionView.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <!-- إضافة Margin حول كل عنصر -->
+                                                            <ContentView Margin="1" Padding="1">
+
                                                                 <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
-                                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
-                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="80" HorizontalOptions="StartAndExpand"/>
-                                                                    <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                             CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked" BackgroundColor="Transparent"/>
-                                                                    <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="20" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="20"
-                                                                             CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked" BackgroundColor="Transparent"/>
+                                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
+                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
+                                                                    <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked" BackgroundColor="Transparent" HorizontalOptions="Fill"/>
+                                                                    <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
+                                                                             CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked" BackgroundColor="Transparent" HorizontalOptions="Fill"/>
                                                                 </Grid>
-                                                            
-                                                        </ContentView>
-                                                    </DataTemplate>
-                                                </CollectionView.ItemTemplate>
-                                            </CollectionView>
 
-                                        </VerticalStackLayout>
+                                                            </ContentView>
+                                                        </DataTemplate>
+                                                    </CollectionView.ItemTemplate>
+                                                </CollectionView>
+
+                                            </VerticalStackLayout>
                                         </Border>
                                     </toolkit:Expander.Content>
                                 </toolkit:Expander>
