@@ -1,8 +1,4 @@
 ﻿using Microsoft.Data.Sqlite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 public class SchemaComparer
 {
     public static bool CompareSchemas(string originalDbPath, string backupDbPath)
@@ -75,8 +71,8 @@ public class SchemaComparer
 
         if (originalColumns.Count != backupColumns.Count)
         {
-            Console.WriteLine($"عدد الأعمدة في الجدول {tableName} مختلف.");
-            Console.WriteLine($"عدد الأعمدة في النسخة الأصلية : {originalColumns.Count} وعددها في النسخة الاحتياطية : {backupColumns.Count}");
+            //Console.WriteLine($"عدد الأعمدة في الجدول {tableName} مختلف.");
+            //Console.WriteLine($"عدد الأعمدة في النسخة الأصلية : {originalColumns.Count} وعددها في النسخة الاحتياطية : {backupColumns.Count}");
             return false;
         }
         return originalColumns.SequenceEqual(backupColumns);

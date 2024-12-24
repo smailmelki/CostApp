@@ -187,22 +187,27 @@ namespace CostApp
             await BottomSheetBorder.TranslateTo(0, 100, 500, Easing.Linear); // انتقال للأسفل
             BottomSheetBorder.IsVisible = false; // إخفاء المكون
         }
-
+        /// <summary>
+        /// إنشاء نسخة احتياطية من قاعدة البيانات
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void btnBackUp_Clicked(object sender, EventArgs e)
         {
             //Get user to pick backup location
-            string? backupPath = await SqliteBackupManager.PickBackupFolderAsync();
-            if (string.IsNullOrEmpty(backupPath))
+            string? backupFolder = await SqliteBackupManager.PickBackupFolderAsync();
+            if (string.IsNullOrEmpty(backupFolder))
             {
                 await DisplayAlert("خطأ", "لم يتم اختيار مكان لحفظ نسخة من قاعدة البيانات ...", "موافق");
                 return;
             }
+            string backupPath = Path.Combine(backupFolder, GenerateBackupFileName());
             using (var context = new DBContext())
             {
                 string databasePath = context.Database.GetDbConnection().DataSource;
-                string? backupFilePath = await SqliteBackupManager.BackupDatabaseAsync(databasePath, backupPath);
+                bool backupDone = await SqliteBackupManager.BackupDatabaseAsync(databasePath, backupPath);
 
-                if (backupFilePath != null)
+                if (backupDone)
                 {
                     await DisplayAlert("نسخ قاعدة البيانات", "تم انشاء نسخة من قاعدة البيانات", "موافق");
                 }
@@ -213,10 +218,17 @@ namespace CostApp
             }
         }
 
+        /// <summary>
+        /// استعادة نسخة احتياطية من قاعدة البيانات
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void btnRestor_Clicked(object sender, EventArgs e)
         {
             // اختيار ملف النسخة الاحتياطية
             var backupPath = await SqliteBackupManager.PickBackupFileAsync();
+            string DatabasePath = db.Database.GetDbConnection().DataSource; // مسار قاعدة البيانات الأصلية
+
             if (string.IsNullOrEmpty(backupPath))
             {
                 await DisplayAlert("خطأ", "لم يتم العثور على قاعدة البيانات الاحتياطية.", "موافق");
@@ -225,15 +237,13 @@ namespace CostApp
 
             try
             {
-                // فتح الملف كتيار بيانات
-                using var dbFileStream = File.OpenRead(backupPath);
                 ///////////////////////////////
-                string? originalDb = db.Database.GetDbConnection().DataSource; // مسار قاعدة البيانات الأصلية
 
-                if (SchemaComparer.CompareSchemas(originalDb, backupPath))
+                if (SchemaComparer.CompareSchemas(backupPath, DatabasePath))
                 {
                     // استعادة قاعدة البيانات
-                    if (await SqliteBackupManager.RestoreBdFileAsync(dbFileStream, db))
+                    bool RestoreDone = await SqliteBackupManager.BackupDatabaseAsync(backupPath, DatabasePath);
+                    if (RestoreDone)
                     {
                         FillData();
                         await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات بنجاح.", "موافق");
@@ -254,7 +264,15 @@ namespace CostApp
             {
                 await DisplayAlert("خطأ", $"حدث خطأ أثناء استعادة قاعدة البيانات: {ex.Message}", "موافق");
             }
-        }       
+        }
+        /// <summary>
+        /// يولد اسم ملف نسخة احتياطية جديدة بناءً على التاريخ والوقت الحاليين.
+        /// </summary>
+        /// <returns>اسم ملف النسخة الاحتياطية</returns>
+        private static string GenerateBackupFileName()
+        {
+            return $"backup_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+        }
     }
 }
 
