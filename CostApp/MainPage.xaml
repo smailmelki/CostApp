@@ -39,7 +39,7 @@
                                     <toolkit:Expander.Header>
                                         <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35" BackgroundColor="Transparent">
                                             <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
-                                            <Label Grid.Column="1" Text="{Binding Total, StringFormat='{0:C}'}" FontSize="20" />
+                                            <Label Grid.Column="1" Text="{Binding Total, StringFormat='{}{0:N2} دج'}" FontSize="20" />
                                             <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" HorizontalOptions="Center"
                                                 MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Transparent"/>
                                             <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.png" Clicked="BtnDelete_Clicked" Padding="0" HorizontalOptions="Center"
@@ -74,7 +74,7 @@
 
                                                                 <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
                                                                     <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
-                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
+                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{}{0:N2} دج'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
                                                                     <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
                                                                              CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked" BackgroundColor="Transparent" HorizontalOptions="Fill"/>
                                                                     <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
