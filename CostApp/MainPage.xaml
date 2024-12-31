@@ -10,7 +10,7 @@
                      Clicked="ToolbarItem_Clicked"
                      Order="Secondary"/>
     </ContentPage.ToolbarItems>
-    <AbsoluteLayout>
+    <AbsoluteLayout Padding="5">
         <Grid AbsoluteLayout.LayoutBounds="0, 0, 1, 1" AbsoluteLayout.LayoutFlags="All"
               RowDefinitions="Auto,Auto,*, Auto, Auto" Padding="5">
             <!-- المجموع الكلي -->
