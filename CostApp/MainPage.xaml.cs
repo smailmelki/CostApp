@@ -55,8 +55,6 @@ namespace CostApp
 
         private async void ShowToast(string message)
         {
-
-
 #if ANDROID || IOS
             CancellationTokenSource cancellation = new CancellationTokenSource();
 
@@ -130,7 +128,7 @@ namespace CostApp
             var button = sender as ImageButton;
             if (button?.BindingContext is TreeItem treeItem)
             {
-                bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف العنصر ؟ \n سيتم حذف كل العناصر المرتبطة به", "نعم", "لا");
+                bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف {treeItem.Title} ؟ \n سيتم حذف كل العناصر المرتبطة به", "نعم", "لا");
                 if (confirm)
                 {
                     db = new DBContext();

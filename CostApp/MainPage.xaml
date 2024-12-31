@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              FlowDirection="RightToLeft"
+             Title="برنامج حساب التكاليف"
              x:Class="CostApp.MainPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="اعدادات"
@@ -11,91 +12,94 @@
     </ContentPage.ToolbarItems>
     <AbsoluteLayout>
         <Grid AbsoluteLayout.LayoutBounds="0, 0, 1, 1" AbsoluteLayout.LayoutFlags="All"
-              RowDefinitions="*, Auto, Auto" Padding="5">
-            <ScrollView Grid.Row="0">
-                <VerticalStackLayout Margin="20">
-                    <!-- المجموع الكلي -->
-                    <HorizontalStackLayout Padding="0,0,0,10">
-                        <Label Text="المجموع الكلي : " FontSize="Title"/>
-                        <Label x:Name="lblTotal" FontSize="Title" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}"/>
-                    </HorizontalStackLayout>
+              RowDefinitions="Auto,Auto,*, Auto, Auto" Padding="5">
+            <!-- المجموع الكلي -->
+            <HorizontalStackLayout Grid.Row="0" Padding="0,0,0,10">
+                <Label Text="المجموع الكلي : " FontSize="Title"/>
+                <Label x:Name="lblTotal" FontSize="Title" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}"/>
+            </HorizontalStackLayout>
 
-                    <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35">
-                        <Label Grid.Column="0" Text="العنصر" FontSize="18" FontAttributes="Bold"/>
-                        <Label Grid.Column="1" Text="التكلفة" FontSize="18" FontAttributes="Bold" />
-                        <Label Grid.Column="2" Text="اضافة" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
-                        <Label Grid.Column="3" Text="حذف" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
-                    </Grid>
-
-                    <!-- التكرار عبر جميع العناصر في القائمة -->
-                    <CollectionView x:Name="CollectionItemView" EmptyView="No items to display">
-                        <CollectionView.ItemsLayout>
-                            <!-- التحكم بالمسافات بين العناصر -->
-                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="4"/>
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <toolkit:Expander>
-                                    <toolkit:Expander.Header>
-                                        <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35" BackgroundColor="Transparent">
-                                            <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
-                                            <Label Grid.Column="1" Text="{Binding Total, StringFormat='{}{0:N2} دج'}" FontSize="20" />
-                                            <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" HorizontalOptions="Center"
+            <Grid Grid.Row="1" ColumnDefinitions="3*,4*,*,*">
+                <Label Grid.Column="0" Text="العنصر" FontSize="18" FontAttributes="Bold"/>
+                <Label Grid.Column="1" Text="التكلفة" FontSize="18" FontAttributes="Bold" />
+                <Label Grid.Column="2" Text="اضافة" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+                <Label Grid.Column="3" Text="حذف" FontSize="16" FontAttributes="Bold" HorizontalOptions="Center"/>
+            </Grid>
+            <ScrollView Grid.Row="2">
+                <!-- التكرار عبر جميع العناصر في القائمة -->
+                <CollectionView x:Name="CollectionItemView" EmptyView="No items to display">
+                    <CollectionView.ItemsLayout>
+                        <!-- التحكم بالمسافات بين العناصر -->
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="4"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <toolkit:Expander>
+                                <toolkit:Expander.Header>
+                                    <Grid ColumnDefinitions="3*,4*,*,*" RowDefinitions="35" BackgroundColor="Transparent">
+                                        <Label Grid.Column="0" Text="{Binding Title}" FontSize="20"/>
+                                        <Label Grid.Column="1" Text="{Binding Total, StringFormat='{}{0:N2} دج'}" FontSize="20" />
+                                        <ImageButton x:Name="BtnAdd" Grid.Column="2" Source="add_icon.png" Clicked="BtnAdd_Clicked" Padding="0" HorizontalOptions="Center"
                                                 MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Transparent"/>
-                                            <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.png" Clicked="BtnDelete_Clicked" Padding="0" HorizontalOptions="Center"
+                                        <ImageButton x:Name="BtnDelete" Grid.Column="3" Source="delete_icon.png" Clicked="BtnDelete_Clicked" Padding="0" HorizontalOptions="Center"
                                                 MinimumHeightRequest="20" HeightRequest="20" MinimumWidthRequest="20" WidthRequest="20" BackgroundColor="Transparent"/>
-                                        </Grid>
-                                    </toolkit:Expander.Header>
+                                    </Grid>
+                                </toolkit:Expander.Header>
 
-                                    <toolkit:Expander.Content>
-                                        <Border BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}">
-                                            <VerticalStackLayout>
+                                <toolkit:Expander.Content>
+                                    <Border BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}">
+                                        <VerticalStackLayout>
 
-                                                <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
+                                            <CollectionView ItemsSource="{Binding Details}" EmptyView="No items to display">
 
-                                                    <CollectionView.Header>
-                                                        <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
-                                                            <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
-                                                            <Label Grid.Column="1"  Text="المبلغ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
-                                                            <Label Grid.Column="2" Text="تعديل" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
-                                                            <Label Grid.Column="3" Text="حذف" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
-                                                        </Grid>
-                                                    </CollectionView.Header>
+                                                <CollectionView.Header>
+                                                    <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
+                                                        <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
+                                                        <Label Grid.Column="1"  Text="المبلغ" FontAttributes="Bold" HorizontalOptions="Fill" MinimumWidthRequest="100"/>
+                                                        <Label Grid.Column="2" Text="تعديل" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
+                                                        <Label Grid.Column="3" Text="حذف" FontAttributes="Bold" HorizontalOptions="Fill" HorizontalTextAlignment="Center" MinimumWidthRequest="50" WidthRequest="40"/>
+                                                    </Grid>
+                                                </CollectionView.Header>
 
-                                                    <CollectionView.ItemsLayout>
-                                                        <!-- التحكم بالمسافات بين العناصر -->
-                                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
-                                                    </CollectionView.ItemsLayout>
+                                                <CollectionView.ItemsLayout>
+                                                    <!-- التحكم بالمسافات بين العناصر -->
+                                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                                                </CollectionView.ItemsLayout>
 
-                                                    <CollectionView.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <!-- إضافة Margin حول كل عنصر -->
-                                                            <ContentView Margin="1" Padding="1">
+                                                <CollectionView.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <!-- إضافة Margin حول كل عنصر -->
+                                                        <ContentView Margin="1" Padding="1">
 
-                                                                <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
-                                                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
-                                                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{}{0:N2} دج'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
-                                                                    <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
+                                                            <Grid ColumnDefinitions="2*,2*,*,*" RowDefinitions="25">
+                                                                <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
+                                                                <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{}{0:N2} دج'}" MinimumWidthRequest="100" HorizontalOptions="Fill"/>
+                                                                <ImageButton Grid.Column="2" x:Name="SupBtnEdit" Source="edit_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
                                                                              CommandParameter="{Binding .}" Clicked="SupBtnEdit_Clicked" BackgroundColor="Transparent" HorizontalOptions="Fill"/>
-                                                                    <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
+                                                                <ImageButton Grid.Column="3" x:Name="SupBtnDelete" Source="delete_icon.png" WidthRequest="40" HeightRequest="20" MinimumHeightRequest="20" MinimumWidthRequest="50"
                                                                              CommandParameter="{Binding .}" Clicked="SupBtnDelete_Clicked" BackgroundColor="Transparent" HorizontalOptions="Fill"/>
-                                                                </Grid>
+                                                            </Grid>
 
-                                                            </ContentView>
-                                                        </DataTemplate>
-                                                    </CollectionView.ItemTemplate>
-                                                </CollectionView>
+                                                        </ContentView>
+                                                    </DataTemplate>
+                                                </CollectionView.ItemTemplate>
+                                            </CollectionView>
 
-                                            </VerticalStackLayout>
-                                        </Border>
-                                    </toolkit:Expander.Content>
-                                </toolkit:Expander>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </toolkit:Expander.Content>
+                            </toolkit:Expander>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </ScrollView>
-            <Button Grid.Row="1" x:Name="BtnAddItem" Text="اضافة عنصر جديد" Clicked="BtnAddItem_Clicked"/>
+            <Button Grid.Row="3" x:Name="BtnAddItem" Text="اضافة عنصر جديد" Clicked="BtnAddItem_Clicked"
+        BackgroundColor="SteelBlue"
+        TextColor="White"
+        CornerRadius="10"
+        Padding="10,5"
+        HorizontalOptions="Center"
+                    />
         </Grid>
 
         <!-- الـ Border الذي يحتوي على ContentView -->
@@ -120,12 +124,22 @@
                                 x:Name="btnBackUp"
                                 Text="نسخ احتياطي"
                                 WidthRequest="105"
+                                BackgroundColor="SteelBlue"
+                                TextColor="White"
+                                CornerRadius="10"
+                                Padding="10,5"
+                                HorizontalOptions="Center"
                                 Clicked="btnBackUp_Clicked"/>
                         <Button Grid.Column="1"
                                 Grid.Row="1"
                                 x:Name="btnRestor"
                                 Text="استعادة"
                                 WidthRequest="105"
+                                BackgroundColor="SteelBlue"
+                                TextColor="White"
+                                CornerRadius="10"
+                                Padding="10,5"
+                                HorizontalOptions="Center"
                                 Clicked="btnRestor_Clicked"/>
                     </Grid>
                     <Button x:Name="btnClose"
