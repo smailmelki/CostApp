@@ -47,6 +47,9 @@ namespace CostApp.Models
             {
                 entity.ToTable("TreeItem");
 
+                //entity.HasMany(d => d.Details)
+                //      .WithOne(t => t.treeItem)
+                //      .HasForeignKey(f => f.ParentID);
                 entity.Property(e => e.ID)
                     .IsRequired(true)
                     .HasColumnName("id");

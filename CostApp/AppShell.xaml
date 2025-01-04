@@ -8,9 +8,9 @@
     Shell.FlyoutBehavior="Flyout"
     Title="CostApp">
     <Shell.FlyoutBackground>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-            <GradientStop Color="CadetBlue" Offset="0.1" />
-            <GradientStop Color="AliceBlue" Offset="0.9" />
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="CadetBlue" Offset="0.2" />
+            <GradientStop Color="AliceBlue" Offset="0.8" />
         </LinearGradientBrush>
     </Shell.FlyoutBackground>
     
@@ -42,10 +42,13 @@
     <Shell.FlyoutFooter>
         <VerticalStackLayout>
             <HorizontalStackLayout HorizontalOptions="Center" Margin="10">
-                <Label Text="Dark" TextColor="Black" VerticalOptions="Center" Margin="5,0,0,0"/>
+                <Label Text="داكن" TextColor="Black" VerticalOptions="Center" Margin="5,0,0,0"
+                       Padding="0,0,10,0"/>
                 <Switch IsToggled="{Binding IsLightMode}"
-                        Toggled="OnThemeSwitchToggled"/>
-                <Label Text="Light" TextColor="Black" VerticalOptions="Center" Margin="0,0,5,0"/>
+                        Toggled="OnThemeSwitchToggled"
+                        MinimumWidthRequest="50"/>
+                <Label Text="فاتح" TextColor="Black" VerticalOptions="Center" Margin="0,0,5,0"
+                       Padding="0,0,10,0"/>
             </HorizontalStackLayout>
             <Label Text="** Developed by Smail Melki **" TextColor="Black" HorizontalOptions="Center" Margin="10"/>
         </VerticalStackLayout>

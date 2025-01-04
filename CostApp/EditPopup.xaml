@@ -4,20 +4,23 @@
              x:Class="CostApp.EditPopup"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}"
-             Size="330,300">
-    <VerticalStackLayout Padding="10">
+             Size="330,330">
+    <VerticalStackLayout Padding="5">
         <Label Text="اضافة التكاليف" HeightRequest="50" FontSize="Title"
                VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
-        <Grid ColumnDefinitions="*,3*" RowDefinitions="35,35,70" Margin="20" RowSpacing="7"
+        <Grid ColumnDefinitions="*,3*" RowDefinitions="35,35,55,auto" Margin="20" RowSpacing="7"
               FlowDirection="RightToLeft">
             <Label Grid.Column="0" Grid.Row="0" Text="المبلغ" VerticalTextAlignment="Center"/>
             <Label Grid.Column="0" Grid.Row="1" Text="التاريخ" VerticalTextAlignment="Center"/>
             <Label Grid.Column="0" Grid.Row="2" Text="ملاحظات"/>
+            <Label Grid.Column="0" Grid.Row="3" Text="نقل الى :" VerticalTextAlignment="Center" x:Name="lblpicker"/>
             <Entry Grid.Column="1" Grid.Row="0" x:Name="txtAmount" Placeholder="0,00"
                    Margin="0" MinimumHeightRequest="35" HeightRequest="35" Keyboard="Numeric"/>
             <DatePicker Grid.Column="1" Grid.Row="1" x:Name="dtpDate" 
                         MinimumHeightRequest="35" HeightRequest="35"/>
             <Editor Grid.Column="1" Grid.Row="2" x:Name="txtNote" Placeholder="Note"/>
+            <Picker Grid.Column="1" Grid.Row="3" x:Name="pickerItems"
+                    ItemDisplayBinding="{Binding Title}"/>
         </Grid>
         <HorizontalStackLayout Spacing="10">
             <Button x:Name="BtnCancel" Text="الغاء" Clicked="OnCancelClicked" WidthRequest="70"/>

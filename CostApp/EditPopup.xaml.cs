@@ -16,12 +16,23 @@ namespace CostApp
             {
                 ParentID = treeItem.ID,
             };
+            lblpicker.IsVisible = false;
+            pickerItems.IsVisible = false;
         }
         public EditPopup(DetailItem detailItem)
         {
             InitializeComponent();
+            LoadData();
             this.detailItem = detailItem;
             GetData();
+        }
+        private void LoadData()
+        {
+            // ÌáÈ ÇáÈíÇäÇÊ ãä ÞÇÚÏÉ ÇáÈíÇäÇÊ (äãæÐÌíÇð ÈÇÓÊÎÏÇã EF)
+            using (var db = new DBContext()) 
+            {
+                pickerItems.ItemsSource = db.TreeItem.Select(a => new { a.ID, a.Title }).ToList();
+            }
         }
 
         void SetData()
@@ -31,6 +42,8 @@ namespace CostApp
                 detailItem.Date = dtpDate.Date;
                 detailItem.Amount = decimal.Parse(txtAmount.Text);
                 detailItem.Note = txtNote.Text;
+                if (pickerItems.SelectedItem != null)
+                    detailItem.ParentID = ((dynamic)pickerItems.SelectedItem).ID;
             }
         }
         void GetData()
