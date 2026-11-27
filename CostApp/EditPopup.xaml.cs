@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
@@ -7,18 +8,16 @@ namespace CostApp
 {
     public partial class EditPopup : Popup
     {
+        private readonly DetailItem detailItem;
 
-        DetailItem detailItem;
         public EditPopup(TreeItem treeItem)
         {
             InitializeComponent();
-            detailItem = new DetailItem
-            {
-                ParentID = treeItem.ID,
-            };
+            detailItem = new DetailItem { ParentID = treeItem.ID, Date = DateTime.Today };
             lblpicker.IsVisible = false;
             pickerItems.IsVisible = false;
         }
+
         public EditPopup(DetailItem detailItem)
         {
             InitializeComponent();
@@ -26,52 +25,56 @@ namespace CostApp
             this.detailItem = detailItem;
             GetData();
         }
+
         private void LoadData()
         {
-            // ÌáÈ ÇáÈíÇäÇÊ ãä ÞÇÚÏÉ ÇáÈíÇäÇÊ (äãæÐÌíÇð ÈÇÓÊÎÏÇã EF)
-            using (var db = new DBContext()) 
-            {
-                pickerItems.ItemsSource = db.TreeItem.Select(a => new { a.ID, a.Title }).ToList();
-            }
+            using var db = new DBContext();
+            pickerItems.ItemsSource = db.TreeItem
+                .Select(a => new { a.ID, a.Title })
+                .ToList();
         }
 
-        void SetData()
+        private bool TrySetData()
         {
-            if (!string.IsNullOrWhiteSpace(txtAmount.Text))
-            {
-                detailItem.Date = dtpDate.Date;
-                detailItem.Amount = decimal.Parse(txtAmount.Text);
-                detailItem.Note = txtNote.Text;
-                if (pickerItems.SelectedItem != null)
-                    detailItem.ParentID = ((dynamic)pickerItems.SelectedItem).ID;
-            }
+            var text = txtAmount.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+
+            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var amount)
+                && !decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out amount))
+                return false;
+
+            if (amount <= 0)
+                return false;
+
+            detailItem.Date = dtpDate.Date;
+            detailItem.Amount = amount;
+            detailItem.Note = txtNote.Text?.Trim();
+            if (pickerItems.SelectedItem != null)
+                detailItem.ParentID = ((dynamic)pickerItems.SelectedItem).ID;
+
+            return true;
         }
-        void GetData()
+
+        private void GetData()
         {
             dtpDate.Date = detailItem.Date;
-            txtAmount.Text = detailItem.Amount.ToString();
+            txtAmount.Text = detailItem.Amount.ToString(CultureInfo.CurrentCulture);
             txtNote.Text = detailItem.Note;
         }
 
         private async void OnSaveClicked(object sender, EventArgs e)
         {
-            SetData();
-            if (!string.IsNullOrWhiteSpace(txtAmount.Text))
+            if (!TrySetData())
             {
-                await CloseAsync(detailItem);
+                await DisplayAlert("Ø¨ÙŠØ§Ù†Ø§Øª ØºÙŠØ± ØµØ­ÙŠØ­Ø©",
+                    "Ø£Ø¯Ø®Ù„ Ù…Ø¨Ù„ØºÙ‹Ø§ Ø±Ù‚Ù…ÙŠÙ‹Ø§ Ø£ÙƒØ¨Ø± Ù…Ù† ØµÙØ±ØŒ Ù…Ø¹ Ø§Ø³ØªØ®Ø¯Ø§Ù… Ø§Ù„ÙØ§ØµÙ„Ø© Ø§Ù„Ø¹Ø´Ø±ÙŠØ© Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø©.", "Ù…ÙˆØ§ÙÙ‚");
+                return;
             }
-            else
-            {
-                string message = "íÌÈ ÇÏÎÇá ÞíãÉ ÕÇáÍÉ !";
-                var toast = Toast.Make(message, ToastDuration.Short, 14); // ÇáÑÓÇáÉ¡ ÇáãÏÉ¡ æÍÌã ÇáÎØ
-                await toast.Show();
-                await CloseAsync(false);
-            }
+
+            await CloseAsync(detailItem);
         }
 
-        private void OnCancelClicked(object sender, EventArgs e)
-        {
-            Close(false);
-        }
+        private void OnCancelClicked(object sender, EventArgs e) => Close(false);
     }
 }
