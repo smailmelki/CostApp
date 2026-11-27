@@ -1,56 +1,53 @@
 using CostApp.Models;
 using System.Collections.ObjectModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace CostApp;
 
 public partial class FilterPage : ContentPage
 {
-    DBContext db = new DBContext();
-    public ObservableCollection<DetailItem> Items { get; set; }
-    IQueryable<DetailItem> data;
-    decimal total= 0;
+    private readonly DBContext db = new();
+    public ObservableCollection<DetailItem> Items { get; private set; } = new();
+
     public FilterPage()
-	{
-		InitializeComponent();
-        ItializeData();
+    {
+        InitializeComponent();
+        dtpFrom.Date = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        dtpTo.Date = DateTime.Today;
+        ApplyFilter();
     }
 
-    private void ItializeData()
+    private void ApplyFilter()
     {
-        FillDate(dtpFrom.Date, dtpTo.Date);
-        Items = new ObservableCollection<DetailItem>(data);
+        var start = dtpFrom.Date.Date;
+        var endExclusive = dtpTo.Date.Date.AddDays(1);
+
+        Items = new ObservableCollection<DetailItem>(
+            db.DetailItem.AsNoTracking()
+                .Where(x => x.Date >= start && x.Date < endExclusive)
+                .OrderByDescending(x => x.Date)
+                .Select(x => new DetailItem
+                {
+                    ID = x.ID,
+                    ParentID = x.ParentID,
+                    Date = x.Date,
+                    Amount = x.Amount,
+                    Note = x.Note
+                })
+                .ToList());
+
         CollectionFilter.ItemsSource = Items;
-        total = Items.Sum(cost => cost.Amount);
-        // ÚÑÖ ÇáãÌãæÚ İí Label
-        lblTotal.Text = $"ÇáãÌãæÚ: {total:N2} ÏÌ";
+        lblTotal.Text = $"Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹: {Items.Sum(x => x.Amount):N2} Ø¯Ø¬";
     }
 
-    private void FillDate(DateTime dateFrom, DateTime dateTo)
-    {
-        data = (from d in db.DetailItem
-                         select new DetailItem
-                         {
-                             Date = d.Date,
-                             Amount = d.Amount,
-                             Note = d.Note
-                         });
-    }
-
-    private void btnFilter_Clicked(object sender, EventArgs e)
+    private async void btnFilter_Clicked(object sender, EventArgs e)
     {
         if (dtpFrom.Date > dtpTo.Date)
         {
-            // ÚÑÖ ÑÓÇáÉ ÎØÃ ááãÓÊÎÏã ÈÃä ÊÇÑíÎ ÇáÈÏÇíÉ ÃßÈÑ ãä ÊÇÑíÎ ÇáäåÇíÉ
-            DisplayAlert("ÎØÃ", "ÊÇÑíÎ ÇáÈÏÇíÉ íÌÈ Ãä íßæä ŞÈá ÊÇÑíÎ ÇáäåÇíÉ", "ãæÇİŞ");
+            await DisplayAlert("Ø®Ø·Ø£", "ØªØ§Ø±ÙŠØ® Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ù‚Ø¨Ù„ ØªØ§Ø±ÙŠØ® Ø§Ù„Ù†Ù‡Ø§ÙŠØ© Ø£Ùˆ Ù…Ø³Ø§ÙˆÙŠÙ‹Ø§ Ù„Ù‡.", "Ù…ÙˆØ§ÙÙ‚");
             return;
         }
-        Items = new ObservableCollection<DetailItem>(data.Where(x => x.Date <= dtpTo.Date && x.Date >= dtpFrom.Date));
-        CollectionFilter.ItemsSource = Items;
-        // ÍÓÇÈ ÇáãÌãæÚ
-        total = Items.Sum(cost => cost.Amount);
 
-        // ÚÑÖ ÇáãÌãæÚ İí Label
-        lblTotal.Text = $"ÇáãÌãæÚ: {total:N2} ÏÌ";
-
+        ApplyFilter();
     }
 }
