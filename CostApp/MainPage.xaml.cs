@@ -132,11 +132,10 @@ namespace CostApp
                 if (confirm)
                 {
                     db = new DBContext();
+                    // Remove the child records and parent in one EF transaction.
                     if (treeItem.Details != null)
-                    {
                         db.DetailItem.RemoveRange(treeItem.Details);
-                        db.SaveChanges();
-                    }                     
+
                     db.TreeItem.Remove(treeItem);
                     db.SaveChanges();
                     FillData();
@@ -235,28 +234,39 @@ namespace CostApp
 
             try
             {
-                ///////////////////////////////
-
-                if (SchemaComparer.CompareSchemas(backupPath, DatabasePath))
+                if (!SqliteBackupManager.IsValidDatabase(backupPath))
                 {
-                    // استعادة قاعدة البيانات
-                    bool RestoreDone = await SqliteBackupManager.BackupDatabaseAsync(backupPath, DatabasePath);
-                    if (RestoreDone)
-                    {
-                        FillData();
-                        await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات بنجاح.", "موافق");
-                    }
-                    else
-                    {
-                        await DisplayAlert("خطأ", "فشلت عملية استعادة قاعدة البيانات.", "موافق");
-                    }
+                    await DisplayAlert("خطأ", "الملف المحدد ليس قاعدة SQLite سليمة.", "موافق");
+                    return;
+                }
+
+                if (!SchemaComparer.CompareSchemas(backupPath, DatabasePath))
+                {
+                    await DisplayAlert("خطأ", "بنية قاعدة البيانات مختلفة.", "موافق");
+                    return;
+                }
+
+                // Keep a recovery copy of the current data before replacing it.
+                var safetyCopy = Path.Combine(FileSystem.CacheDirectory,
+                    $"CostApp_before_restore_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+                if (!await SqliteBackupManager.BackupDatabaseAsync(DatabasePath, safetyCopy))
+                {
+                    await DisplayAlert("خطأ", "تعذر إنشاء نسخة أمان؛ لم تتم الاستعادة.", "موافق");
+                    return;
+                }
+
+                var restoreDone = await SqliteBackupManager.BackupDatabaseAsync(backupPath, DatabasePath);
+                if (restoreDone)
+                {
+                    db.Dispose();
+                    db = new DBContext();
+                    FillData();
+                    await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات. نسخة الأمان محفوظة مؤقتًا.", "موافق");
                 }
                 else
                 {
-                    await DisplayAlert("خطأ", "بنية قاعدة البيانات مختلفة.", "موافق");
+                    await DisplayAlert("خطأ", $"فشلت الاستعادة. نسخة الأمان: {safetyCopy}", "موافق");
                 }
-                ///////////////////////////////
-             
             }
             catch (Exception ex)
             {
