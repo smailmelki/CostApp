@@ -1,34 +1,28 @@
-﻿namespace CostApp
+namespace CostApp
 {
-    public static class DialogService // أو في أي مكان مناسب آخر
+    public static class DialogService
     {
+        private static Page? CurrentPage =>
+            Shell.Current ?? Application.Current?.Windows.FirstOrDefault()?.Page;
 
         public static async Task DisplayAlertAsync(string title, string message, string cancel)
         {
-            if (App.Current?.MainPage != null) // تحقق من وجود MainPage
+            var page = CurrentPage;
+            if (page != null)
             {
-                await App.Current.MainPage.DisplayAlert(title, message, cancel);
-            }
-            else
-            {
-                // معالجة حالة عدم وجود MainPage (نادرًا ما تحدث)
-                System.Diagnostics.Debug.WriteLine("MainPage is null!");
+                await page.DisplayAlertAsync(title, message, cancel);
             }
         }
-
 
         public static async Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel)
         {
-            if (App.Current?.MainPage != null)
+            var page = CurrentPage;
+            if (page != null)
             {
-                return await App.Current.MainPage.DisplayAlert(title, message, accept, cancel);
+                return await page.DisplayAlertAsync(title, message, accept, cancel);
             }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("MainPage is null!");
-                return false; // أو قيمة افتراضية مناسبة
-            }
+
+            return false;
         }
     }
-
 }

@@ -1,130 +1,72 @@
-﻿using Microsoft.Data.Sqlite;
-public class SchemaComparer
+using Microsoft.Data.Sqlite;
+
+namespace CostApp
 {
-    public static bool CompareSchemas(string originalDbPath, string backupDbPath)
+    public static class SchemaComparer
     {
-        try
+        private static readonly string[] RequiredCoreTables = ["TreeItem", "DetailItem"];
+
+        public static bool HasRequiredTables(string dbPath)
         {
-            using (var originalConn = new SqliteConnection($"Data Source={originalDbPath}"))
-            using (var backupConn = new SqliteConnection($"Data Source={backupDbPath}"))
+            if (string.IsNullOrWhiteSpace(dbPath) || !File.Exists(dbPath))
+                return false;
+
+            try
             {
-                originalConn.Open();
-                backupConn.Open();
+                using var conn = new SqliteConnection(
+                    new SqliteConnectionStringBuilder { DataSource = dbPath, Mode = SqliteOpenMode.ReadOnly }.ToString());
+                conn.Open();
 
-                // الحصول على قائمة الجداول في كلا قاعدتي البيانات
-                var originalTables = GetTableNames(originalConn);
-                var backupTables = GetTableNames(backupConn);
-
-                // مقارنة عدد الجداول وأسمائها
-                if (!originalTables.SequenceEqual(backupTables))
+                var tables = GetTableNames(conn);
+                foreach (var required in RequiredCoreTables)
                 {
-                    Console.WriteLine("عدد أو أسماء الجداول مختلفة.");
-                    return false;
-                }
-
-                // مقارنة بنية كل جدول
-                foreach (var tableName in originalTables)
-                {
-                    if (!CompareTableSchemas(originalConn, backupConn, tableName))
-                    {
-                        Console.WriteLine($"بنية الجدول {tableName} مختلفة.");
+                    if (!tables.Contains(required, StringComparer.OrdinalIgnoreCase))
                         return false;
-                    }
                 }
 
-                return true; // البنيتان متطابقتان
+                // Verify core columns exist in TreeItem and DetailItem
+                var treeCols = GetColumnNames(conn, "TreeItem");
+                var detailCols = GetColumnNames(conn, "DetailItem");
+
+                return treeCols.Contains("id", StringComparer.OrdinalIgnoreCase)
+                    && treeCols.Contains("Title", StringComparer.OrdinalIgnoreCase)
+                    && detailCols.Contains("id", StringComparer.OrdinalIgnoreCase)
+                    && detailCols.Contains("ParentID", StringComparer.OrdinalIgnoreCase)
+                    && detailCols.Contains("Date", StringComparer.OrdinalIgnoreCase)
+                    && detailCols.Contains("Amount", StringComparer.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
             }
         }
-        catch (SqliteException ex)
-        {
-            Console.WriteLine($"خطأ في قاعدة البيانات: {ex.Message}");
-            return false;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"خطأ غير متوقع: {ex.Message}");
-            return false;
-        }
-    }
 
-    private static List<string> GetTableNames(SqliteConnection connection)
-    {
-        List<string> tableNames = new List<string>();
-        using (var command = connection.CreateCommand())
+        private static List<string> GetTableNames(SqliteConnection connection)
         {
+            var tableNames = new List<string>();
+            using var command = connection.CreateCommand();
             command.CommandText = "SELECT name FROM sqlite_master WHERE type='table'";
-            using (var reader = command.ExecuteReader())
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    tableNames.Add(reader.GetString(0));
-                }
+                tableNames.Add(reader.GetString(0));
             }
+            return tableNames;
         }
-        return tableNames.OrderBy(n => n).ToList(); // ترتيب الأسماء للمقارنة
-    }
 
-    private static bool CompareTableSchemas(SqliteConnection originalConn, SqliteConnection backupConn, string tableName)
-    {
-        var originalColumns = GetColumnInfo(originalConn, tableName);
-        var backupColumns = GetColumnInfo(backupConn, tableName);
-
-        if (originalColumns.Count != backupColumns.Count)
+        private static List<string> GetColumnNames(SqliteConnection connection, string tableName)
         {
-            //Console.WriteLine($"عدد الأعمدة في الجدول {tableName} مختلف.");
-            //Console.WriteLine($"عدد الأعمدة في النسخة الأصلية : {originalColumns.Count} وعددها في النسخة الاحتياطية : {backupColumns.Count}");
-            return false;
-        }
-        return originalColumns.SequenceEqual(backupColumns);
-    }
-
-    private static List<ColumnInfo> GetColumnInfo(SqliteConnection connection, string tableName)
-    {
-        List<ColumnInfo> columns = new List<ColumnInfo>();
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = $"PRAGMA table_info({tableName})";
-            using (var reader = command.ExecuteReader())
+            var columns = new List<string>();
+            using var command = connection.CreateCommand();
+            // PRAGMA table_info returns: 0=cid, 1=name, 2=type, 3=notnull, 4=dflt_value, 5=pk
+            command.CommandText = $"PRAGMA table_info(\"{tableName}\")";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
             {
-                while (reader.Read())
-                {
-                    var INF = new ColumnInfo();
-                    INF.Name = reader.IsDBNull(0) ? null : reader.GetString(0); // معالجة قيم NULL
-                    INF.Type = reader.IsDBNull(1) ? null : reader.GetString(1); // معالجة قيم NULL
-                    INF.NotNull = !reader.IsDBNull(2) && reader.GetInt32(2) == 1;
-                    INF.DefaultValue = reader.IsDBNull(3) ? null : reader.GetValue(3);
-                    INF.PrimaryKey = !reader.IsDBNull(4) && reader.GetInt32(4) == 1;
-                    INF.Collation = reader.IsDBNull(5) ? null : reader.GetString(5);
-                    columns.Add(INF);
-                }
+                if (!reader.IsDBNull(1))
+                    columns.Add(reader.GetString(1));
             }
+            return columns;
         }
-        return columns.OrderBy(c => c.Name).ToList(); // ترتيب الأعمدة حسب الاسم
-    }
-
-    public class ColumnInfo : IEquatable<ColumnInfo>
-    {
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public bool NotNull { get; set; }
-        public object DefaultValue { get; set; }
-        public bool PrimaryKey { get; set; }
-        public string Collation { get; set; }
-
-        public bool Equals(ColumnInfo other)
-        {
-            if (other == null) return false;
-
-            return Name == other.Name &&
-                   Type == other.Type &&
-                   NotNull == other.NotNull &&
-                   Equals(DefaultValue, other.DefaultValue) && // مقارنة القيم الافتراضية
-                   PrimaryKey == other.PrimaryKey &&
-                   Collation == other.Collation;
-        }
-
-        public override bool Equals(object obj) => Equals(obj as ColumnInfo);
-        public override int GetHashCode() => (Name, Type, NotNull, DefaultValue, PrimaryKey, Collation).GetHashCode();
     }
 }
-

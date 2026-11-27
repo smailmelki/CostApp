@@ -1,109 +1,184 @@
-﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
+using CostApp.Models;
 using Microsoft.Data.Sqlite;
 
-public static class SqliteBackupManager
+namespace CostApp
 {
-    public static async Task<string?> PickBackupFileAsync()
+    public static class SqliteBackupManager
     {
-        try
+        public static async Task<string?> PickBackupFileAsync()
         {
-            var file = await FilePicker.PickAsync(new PickOptions
+            try
             {
-                PickerTitle = "اختر ملف النسخة الاحتياطية",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                var file = await FilePicker.PickAsync(new PickOptions
                 {
-                    { DevicePlatform.WinUI, new[] { ".db" } },
-                    { DevicePlatform.Android, new[] { "*/*" } },
-                    { DevicePlatform.iOS, new[] { "db" } },
-                    { DevicePlatform.MacCatalyst, new[] { "db" } }
-                })
-            });
+                    PickerTitle = "اختر ملف النسخة الاحتياطية",
+                    FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                    {
+                        { DevicePlatform.WinUI, new[] { ".db" } },
+                        { DevicePlatform.Android, new[] { "*/*" } },
+                        { DevicePlatform.iOS, new[] { "db" } },
+                        { DevicePlatform.MacCatalyst, new[] { "db" } }
+                    })
+                });
 
-            if (file == null)
+                if (file == null)
+                    return null;
+
+                // Android providers often return content:// URIs rather than a real filesystem path.
+                var localPath = Path.Combine(FileSystem.CacheDirectory,
+                    $"CostApp_import_{Guid.NewGuid():N}.db");
+
+                await using var input = await file.OpenReadAsync();
+                await using var output = File.Create(localPath);
+                await input.CopyToAsync(output);
+                return localPath;
+            }
+            catch
+            {
                 return null;
-
-            // Android providers may return content:// URIs rather than a real filesystem path.
-            var localPath = Path.Combine(FileSystem.CacheDirectory,
-                $"CostApp_import_{Guid.NewGuid():N}.db");
-
-            await using var input = await file.OpenReadAsync();
-            await using var output = File.Create(localPath);
-            await input.CopyToAsync(output);
-            return localPath;
+            }
         }
-        catch
+
+        public static async Task<bool> ExportBackupAsync(string sourcePath, string fileName)
         {
-            return null;
+            if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+                return false;
+
+            var tempBackup = Path.Combine(FileSystem.CacheDirectory, $"CostApp_export_{Guid.NewGuid():N}.db");
+            try
+            {
+                if (!await BackupDatabaseAsync(sourcePath, tempBackup))
+                    return false;
+
+                await using var stream = File.OpenRead(tempBackup);
+                var result = await FileSaver.Default.SaveAsync(fileName, stream, CancellationToken.None);
+                return result.IsSuccessful;
+            }
+            catch (Exception ex)
+            {
+                await DialogService.DisplayAlertAsync("خطأ",
+                    $"تعذر حفظ النسخة الاحتياطية: {ex.Message}", "موافق");
+                return false;
+            }
+            finally
+            {
+                TryDeleteFile(tempBackup);
+            }
         }
-    }
 
-    public static async Task<string?> PickBackupFolderAsync()
-    {
-        try
+        public static bool IsValidDatabase(string path)
         {
-            var result = await FolderPicker.PickAsync(CancellationToken.None);
-            return result?.Folder?.Path;
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                return false;
+
+            try
+            {
+                SqliteConnection.ClearAllPools();
+                using var connection = new SqliteConnection(
+                    new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly }.ToString());
+                connection.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = "PRAGMA integrity_check;";
+                return string.Equals(Convert.ToString(command.ExecuteScalar()), "ok",
+                    StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
         }
-        catch (Exception ex)
+
+        public static async Task<bool> BackupDatabaseAsync(string sourcePath, string destinationPath)
         {
-            await DialogService.DisplayAlertAsync("خطأ",
-                $"تعذر اختيار مجلد النسخ الاحتياطي: {ex.Message}", "موافق");
-            return null;
+            if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+                return false;
+            if (string.IsNullOrWhiteSpace(destinationPath))
+                return false;
+
+            var sourceFullPath = Path.GetFullPath(sourcePath);
+            var destinationFullPath = Path.GetFullPath(destinationPath);
+            if (string.Equals(sourceFullPath, destinationFullPath,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                return false;
+
+            var directory = Path.GetDirectoryName(destinationFullPath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+
+            try
+            {
+                SqliteConnection.ClearAllPools();
+                using var source = new SqliteConnection($"Data Source={sourceFullPath}");
+                using var destination = new SqliteConnection($"Data Source={destinationFullPath}");
+                await source.OpenAsync();
+                await destination.OpenAsync();
+                source.BackupDatabase(destination);
+                return IsValidDatabase(destinationFullPath);
+            }
+            catch (Exception ex)
+            {
+                await DialogService.DisplayAlertAsync("خطأ",
+                    $"تعذر إتمام النسخ أو الاستعادة: {ex.Message}", "موافق");
+                return false;
+            }
         }
-    }
 
-    public static bool IsValidDatabase(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-            return false;
-
-        try
+        public static async Task<(bool success, string message)> RestoreDatabaseSafelyAsync(string backupFilePath)
         {
-            using var connection = new SqliteConnection(
-                new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly }.ToString());
-            connection.Open();
-            using var command = connection.CreateCommand();
-            command.CommandText = "PRAGMA integrity_check;";
-            return string.Equals(Convert.ToString(command.ExecuteScalar()), "ok",
-                StringComparison.OrdinalIgnoreCase);
+            var targetDbPath = DBContext.GetDatabasePath();
+            if (!IsValidDatabase(backupFilePath))
+                return (false, "الملف المحدد ليس قاعدة بيانات SQLite سليمة.");
+
+            if (!SchemaComparer.HasRequiredTables(backupFilePath))
+                return (false, "الملف المحدد لا يحتوي على جداول تطبيق CostApp المطلوبة.");
+
+            var safetyCopy = Path.Combine(FileSystem.CacheDirectory,
+                $"CostApp_before_restore_{DateTime.Now:yyyyMMdd_HHmmss}.db");
+
+            if (File.Exists(targetDbPath))
+            {
+                if (!await BackupDatabaseAsync(targetDbPath, safetyCopy))
+                    return (false, "تعذر إنشاء نسخة أمان قبل الاستعادة؛ لم يتم تعديل البيانات.");
+            }
+
+            try
+            {
+                SqliteConnection.ClearAllPools();
+                bool restored = await BackupDatabaseAsync(backupFilePath, targetDbPath);
+                if (!restored)
+                {
+                    if (File.Exists(safetyCopy))
+                        await BackupDatabaseAsync(safetyCopy, targetDbPath);
+                    return (false, "فشلت عملية الاستعادة، وتم الاحتفاظ بالبيانات الأصلية.");
+                }
+
+                // Upgrade restored DB safely if it came from an older single-project version
+                DBContext.EnsureDatabaseReady();
+                return (true, "تمت استعادة قاعدة البيانات بنجاح.");
+            }
+            catch (Exception ex)
+            {
+                if (File.Exists(safetyCopy))
+                    await BackupDatabaseAsync(safetyCopy, targetDbPath);
+                return (false, $"حدث خطأ أثناء الاستعادة وتم التراجع للنسخة الآمنة: {ex.Message}");
+            }
         }
-        catch
+
+        public static void TryDeleteFile(string? path)
         {
-            return false;
-        }
-    }
+            if (string.IsNullOrWhiteSpace(path))
+                return;
 
-    public static async Task<bool> BackupDatabaseAsync(string sourcePath, string destinationPath)
-    {
-        if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
-            return false;
-        if (string.IsNullOrWhiteSpace(destinationPath))
-            return false;
-
-        var sourceFullPath = Path.GetFullPath(sourcePath);
-        var destinationFullPath = Path.GetFullPath(destinationPath);
-        if (string.Equals(sourceFullPath, destinationFullPath,
-            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-            return false;
-
-        var directory = Path.GetDirectoryName(destinationFullPath);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-
-        try
-        {
-            using var source = new SqliteConnection($"Data Source={sourceFullPath}");
-            using var destination = new SqliteConnection($"Data Source={destinationFullPath}");
-            await source.OpenAsync();
-            await destination.OpenAsync();
-            source.BackupDatabase(destination);
-            return IsValidDatabase(destinationFullPath);
-        }
-        catch (Exception ex)
-        {
-            await DialogService.DisplayAlertAsync("خطأ",
-                $"تعذر إتمام النسخ أو الاستعادة: {ex.Message}", "موافق");
-            return false;
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+            catch
+            {
+                // Ignore temp cleanup errors
+            }
         }
     }
 }

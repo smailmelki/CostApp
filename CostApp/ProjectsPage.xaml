@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:CostApp"
+             x:Class="CostApp.ProjectsPage"
+             FlowDirection="RightToLeft"
+             Title="إدارة المشاريع">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="12" RowSpacing="10">
+        <Label Grid.Row="0"
+               Text="اختر مشروعًا لفتحه أو أضف مشروعًا جديدًا:"
+               FontSize="15"
+               FontAttributes="Bold" />
+
+        <CollectionView x:Name="ProjectsCollection"
+                        Grid.Row="1"
+                        EmptyView="لا توجد مشاريع بعد">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:ProjectsPage+ProjectCardViewModel">
+                    <Border StrokeShape="RoundRectangle 12"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"
+                            Padding="12">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Name}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Border Grid.Column="1"
+                                        IsVisible="{Binding IsActive}"
+                                        BackgroundColor="SteelBlue"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                        Padding="8,3"
+                                        VerticalOptions="Center">
+                                    <Label Text="النشط"
+                                           TextColor="White"
+                                           FontSize="12"
+                                           FontAttributes="Bold" />
+                                </Border>
+                            </Grid>
+
+                            <Label Text="{Binding Description}"
+                                   IsVisible="{Binding HasDescription}"
+                                   FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="4">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding TotalSpentText}"
+                                       FontSize="14"
+                                       FontAttributes="Bold" />
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding ExpenseCountText}"
+                                       FontSize="13"
+                                       HorizontalTextAlignment="End" />
+                                <Label Grid.Row="1" Grid.Column="0"
+                                       IsVisible="{Binding HasBudget}"
+                                       Text="{Binding BudgetText}"
+                                       FontSize="13" />
+                                <Label Grid.Row="1" Grid.Column="1"
+                                       IsVisible="{Binding HasBudget}"
+                                       Text="{Binding RemainingText}"
+                                       TextColor="{Binding RemainingColor}"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="End" />
+                            </Grid>
+
+                            <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                <Button Grid.Column="0"
+                                        Text="فتح المشروع"
+                                        Clicked="OnOpenProjectClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="SteelBlue"
+                                        TextColor="White"
+                                        CornerRadius="8"
+                                        HeightRequest="40" />
+                                <Button Grid.Column="1"
+                                        Text="تعديل"
+                                        Clicked="OnEditProjectClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="SlateGray"
+                                        TextColor="White"
+                                        CornerRadius="8"
+                                        HeightRequest="40" />
+                                <Button Grid.Column="2"
+                                        Text="حذف"
+                                        Clicked="OnDeleteProjectClicked"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#C62828"
+                                        TextColor="White"
+                                        CornerRadius="8"
+                                        HeightRequest="40" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button Grid.Row="2"
+                Text="+ إنشاء مشروع جديد"
+                Clicked="OnNewProjectClicked"
+                BackgroundColor="SteelBlue"
+                TextColor="White"
+                FontAttributes="Bold"
+                CornerRadius="10"
+                HeightRequest="48" />
+    </Grid>
+</ContentPage>

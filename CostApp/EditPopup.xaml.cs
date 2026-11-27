@@ -1,80 +1,87 @@
 using System.Globalization;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using CostApp.Models;
 
 namespace CostApp
 {
-    public partial class EditPopup : Popup
+    public partial class EditPopup : Popup<DetailItem>
     {
         private readonly DetailItem detailItem;
 
         public EditPopup(TreeItem treeItem)
         {
             InitializeComponent();
+            lblHeader.Text = $"إضافة مصروف - {treeItem.Title}";
             detailItem = new DetailItem { ParentID = treeItem.ID, Date = DateTime.Today };
             lblpicker.IsVisible = false;
             pickerItems.IsVisible = false;
+            dtpDate.Date = DateTime.Today;
         }
 
-        public EditPopup(DetailItem detailItem)
+        public EditPopup(DetailItem existingItem, int projectId)
         {
             InitializeComponent();
-            LoadData();
-            this.detailItem = detailItem;
-            GetData();
+            lblHeader.Text = "تعديل مصروف";
+            detailItem = new DetailItem
+            {
+                ID = existingItem.ID,
+                ParentID = existingItem.ParentID,
+                Date = existingItem.Date,
+                Amount = existingItem.Amount,
+                Note = existingItem.Note
+            };
+            LoadCategories(projectId);
+            PopulateFields();
         }
 
-        private void LoadData()
+        private void LoadCategories(int projectId)
         {
-            using var db = new DBContext();
-            pickerItems.ItemsSource = db.TreeItem
-                .Select(a => new { a.ID, a.Title })
-                .ToList();
+            var categories = CostDataService.GetCategoriesList(projectId);
+            pickerItems.ItemsSource = categories;
+            var current = categories.FirstOrDefault(c => c.ID == detailItem.ParentID);
+            if (current != null)
+                pickerItems.SelectedItem = current;
         }
 
-        private bool TrySetData()
+        private void PopulateFields()
         {
-            var text = txtAmount.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(text))
+            dtpDate.Date = detailItem.Date;
+            txtAmount.Text = detailItem.Amount.ToString("0.##", CultureInfo.CurrentCulture);
+            txtNote.Text = detailItem.Note;
+        }
+
+        private bool TryBuildResult()
+        {
+            if (!CostDataService.TryParseAmount(txtAmount.Text, allowZero: false, out var amount))
                 return false;
 
-            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var amount)
-                && !decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out amount))
-                return false;
-
-            if (amount <= 0)
-                return false;
-
-            detailItem.Date = dtpDate.Date;
+            detailItem.Date = (dtpDate.Date ?? DateTime.Today).Date;
             detailItem.Amount = amount;
-            detailItem.Note = txtNote.Text?.Trim();
-            if (pickerItems.SelectedItem != null)
-                detailItem.ParentID = ((dynamic)pickerItems.SelectedItem).ID;
+            detailItem.Note = string.IsNullOrWhiteSpace(txtNote.Text) ? null : txtNote.Text.Trim();
+
+            if (pickerItems.IsVisible && pickerItems.SelectedItem is TreeItem selectedCategory)
+            {
+                detailItem.ParentID = selectedCategory.ID;
+            }
 
             return true;
         }
 
-        private void GetData()
-        {
-            dtpDate.Date = detailItem.Date;
-            txtAmount.Text = detailItem.Amount.ToString(CultureInfo.CurrentCulture);
-            txtNote.Text = detailItem.Note;
-        }
-
         private async void OnSaveClicked(object sender, EventArgs e)
         {
-            if (!TrySetData())
+            if (!TryBuildResult())
             {
-                await Shell.Current.DisplayAlert("بيانات غير صحيحة",
-                    "أدخل مبلغًا رقميًا أكبر من صفر، مع استخدام الفاصلة العشرية المناسبة.", "موافق");
+                await DialogService.DisplayAlertAsync("بيانات غير صحيحة",
+                    "أدخل مبلغًا رقميًا صحيحًا أكبر من صفر.", "موافق");
                 return;
             }
 
             await CloseAsync(detailItem);
         }
 
-        private void OnCancelClicked(object sender, EventArgs e) => Close(false);
+        private async void OnCancelClicked(object sender, EventArgs e)
+        {
+            await CloseAsync(default!);
+        }
     }
 }

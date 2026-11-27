@@ -1,4 +1,4 @@
-﻿namespace CostApp.Models
+namespace CostApp.Models
 {
     public class DetailItem
     {
@@ -7,5 +7,8 @@
         public DateTime Date { get; set; }
         public decimal Amount { get; set; }
         public string? Note { get; set; }
+
+        // Display helper for filtered/search views (not mapped to DB)
+        public string? CategoryTitle { get; set; }
     }
 }

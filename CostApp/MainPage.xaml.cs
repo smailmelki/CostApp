@@ -1,286 +1,261 @@
-﻿using System.Collections.ObjectModel;
-using System.Globalization;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Core.Extensions;
-using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Maui.Extensions;
 using CostApp.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace CostApp
 {
     public partial class MainPage : ContentPage
     {
-        DBContext db = new DBContext();
-        TreeItem treeItem;
-        public ObservableCollection<TreeItem> Items { get; set; }
+        private Project activeProject = new();
+        public ObservableCollection<TreeItem> Items { get; set; } = new();
 
         public MainPage()
         {
             InitializeComponent();
-            // ضبط BindingContext للصفحة
-            this.BindingContext = this;
+            BindingContext = this;
+        }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
             FillData();
         }
 
         private void FillData()
         {
             try
-            {           
-            // تهيئة البيانات
-            Items = (from i in db.TreeItem
-                     select new TreeItem
-                     {
-                         ID = i.ID,
-                         Title = i.Title,
-                         Details = (from dt in db.DetailItem.Where(x => x.ParentID == i.ID)
-                                    select new DetailItem
-                                    {
-                                        ID = dt.ID,
-                                        ParentID = dt.ParentID,
-                                        Date = dt.Date,
-                                        Amount = dt.Amount,
-                                        Note = dt.Note,
-                                    }).ToList()
-                     }).ToObservableCollection();
-            CollectionItemView.ItemsSource = Items;
-            lblTotal.Text = (Items?.Sum(item => item.Total) ?? 0).ToString("C", new CultureInfo("ar-DZ"));
-            }
-            catch (Exception)
             {
-                ShowToast("حدث خطأ ما !");
+                activeProject = CostDataService.GetOrEnsureActiveProject();
+                var categories = CostDataService.GetProjectCategories(activeProject.ID, searchBar.Text);
+
+                Items = new ObservableCollection<TreeItem>(categories);
+                CollectionItemView.ItemsSource = Items;
+
+                lblProjectTitle.Text = activeProject.Name;
+                lblTotal.Text = $"المجموع: {CostDataService.FormatCurrency(activeProject.TotalSpent)}";
+
+                if (activeProject.HasBudget)
+                {
+                    lblRemaining.IsVisible = true;
+                    lblRemaining.Text = $"المتبقي: {CostDataService.FormatCurrency(activeProject.RemainingBudget)}";
+                    lblRemaining.TextColor = activeProject.RemainingBudget >= 0 ? Colors.SeaGreen : Colors.IndianRed;
+                }
+                else
+                {
+                    lblRemaining.IsVisible = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowToast($"حدث خطأ: {ex.Message}");
             }
         }
 
         private async void ShowToast(string message)
         {
 #if ANDROID || IOS
-            CancellationTokenSource cancellation = new CancellationTokenSource();
-
-            // إنشاء Toast
-            var toast = Toast.Make(message, ToastDuration.Short, 14); // 14 حجم الخط
-            // عرض Toast
-            await toast.Show(cancellation.Token);
+            var toast = Toast.Make(message, ToastDuration.Short, 14);
+            await toast.Show();
 #else
-            await DisplayAlert("خطأ",message,"موافق");
+            await DisplayAlertAsync("تنبيه", message, "موافق");
 #endif
         }
 
-        private async void SupBtnEdit_Clicked(object sender, EventArgs e)
+        private void OnSearchTextChanged(object? sender, TextChangedEventArgs e)
         {
-            var button = sender as ImageButton;
-            if (button?.BindingContext is DetailItem detailItem)
-            {
-                var popup = new EditPopup(detailItem);
-                var result = await this.ShowPopupAsync(popup);
+            FillData();
+        }
 
-                if (result is DetailItem item)
+        private void OnSearchPressed(object? sender, EventArgs e)
+        {
+            FillData();
+        }
+
+        private async void ProjectsToolbarItem_Clicked(object? sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync("//ProjectsPage");
+        }
+
+        private async void SupBtnEdit_Clicked(object? sender, EventArgs e)
+        {
+            if (sender is ImageButton { BindingContext: DetailItem detailItem })
+            {
+                var popup = new EditPopup(detailItem, activeProject.ID);
+                var result = await this.ShowPopupAsync<DetailItem>(popup);
+
+                if (result?.Result is DetailItem updated)
                 {
-                    db = new DBContext();
-                    db.DetailItem.Update(item);
-                    db.SaveChanges();
+                    CostDataService.UpdateExpense(updated);
                     FillData();
                 }
             }
         }
 
-        private async void SupBtnDelete_Clicked(object sender, EventArgs e)
+        private async void SupBtnDelete_Clicked(object? sender, EventArgs e)
         {
-            var button = sender as ImageButton;
-            if (button?.BindingContext is DetailItem detailItem)
+            if (sender is ImageButton { BindingContext: DetailItem detailItem })
             {
-                bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف العنصر ؟", "نعم", "لا");
+                bool confirm = await DisplayAlertAsync("تأكيد الحذف", "هل تريد حذف هذا المصروف؟", "نعم", "لا");
                 if (confirm)
                 {
-                    db = new DBContext();
-                    db.DetailItem.Remove(detailItem);
-                    db.SaveChanges();
+                    CostDataService.DeleteExpense(detailItem.ID);
                     FillData();
                 }
             }
         }
 
-        private async void BtnAddItem_Clicked(object sender, EventArgs e)
+        private async void BtnAddItem_Clicked(object? sender, EventArgs e)
         {
-            string result = await DisplayPromptAsync(title: "اضافة عنصر", message: "", accept: "حفظ", cancel: "الغاء");
+            string? result = await DisplayPromptAsync(
+                title: "إضافة تصنيف",
+                message: $"أدخل اسم التصنيف ضمن مشروع \"{activeProject.Name}\":",
+                accept: "حفظ",
+                cancel: "إلغاء",
+                maxLength: 50);
+
             if (!string.IsNullOrWhiteSpace(result))
             {
-                if (db.TreeItem.Any(i=>i.Title==result))
+                var (success, error) = CostDataService.AddCategory(activeProject.ID, result);
+                if (!success)
                 {
-                    ShowToast("هذا العنصر موجود مسبقا !");
+                    ShowToast(error ?? "تعذر إضافة التصنيف.");
                     return;
                 }
-                treeItem = new TreeItem
-                {
-                    Title = result,
-                };
-                db = new DBContext();
-                db.TreeItem.Update(treeItem);
-                db.SaveChanges();
+
                 FillData();
             }
         }
 
-
-        private async void BtnDelete_Clicked(object sender, EventArgs e)
+        private async void BtnRenameCategory_Clicked(object? sender, EventArgs e)
         {
-            var button = sender as ImageButton;
-            if (button?.BindingContext is TreeItem treeItem)
+            if (sender is ImageButton { BindingContext: TreeItem treeItem })
             {
-                bool confirm = await DisplayAlert("تأكيد الحذف", $"هل تريد حذف {treeItem.Title} ؟ \n سيتم حذف كل العناصر المرتبطة به", "نعم", "لا");
+                string? result = await DisplayPromptAsync(
+                    title: "تعديل اسم التصنيف",
+                    message: "أدخل الاسم الجديد:",
+                    accept: "حفظ",
+                    cancel: "إلغاء",
+                    initialValue: treeItem.Title,
+                    maxLength: 50);
+
+                if (!string.IsNullOrWhiteSpace(result))
+                {
+                    var (success, error) = CostDataService.RenameCategory(treeItem.ID, result);
+                    if (!success)
+                    {
+                        ShowToast(error ?? "تعذر تعديل اسم التصنيف.");
+                        return;
+                    }
+
+                    FillData();
+                }
+            }
+        }
+
+        private async void BtnDelete_Clicked(object? sender, EventArgs e)
+        {
+            if (sender is ImageButton { BindingContext: TreeItem treeItem })
+            {
+                bool confirm = await DisplayAlertAsync(
+                    "تأكيد الحذف",
+                    $"هل تريد حذف \"{treeItem.Title}\"؟\nسيتم حذف كل المصاريف المرتبطة به.",
+                    "نعم",
+                    "لا");
+
                 if (confirm)
                 {
-                    db = new DBContext();
-                    // Remove the child records and parent in one EF transaction.
-                    if (treeItem.Details != null)
-                        db.DetailItem.RemoveRange(treeItem.Details);
-
-                    db.TreeItem.Remove(treeItem);
-                    db.SaveChanges();
+                    CostDataService.DeleteCategory(treeItem.ID);
                     FillData();
                 }
             }
         }
 
-        private async void BtnAdd_Clicked(object sender, EventArgs e)
+        private async void BtnAdd_Clicked(object? sender, EventArgs e)
         {
-            var button = sender as ImageButton;
-            if (button?.BindingContext is TreeItem treeItem)
+            if (sender is ImageButton { BindingContext: TreeItem treeItem })
             {
                 var popup = new EditPopup(treeItem);
-                var result = await this.ShowPopupAsync(popup);
+                var result = await this.ShowPopupAsync<DetailItem>(popup);
 
-                if (result is DetailItem detailItem)
+                if (result?.Result is DetailItem detailItem)
                 {
-                    db = new DBContext();
-                    db.DetailItem.Add(detailItem);
-                    db.SaveChanges();
+                    CostDataService.AddExpense(detailItem);
                     FillData();
                 }
             }
         }
 
-        private async void ToolbarItem_Clicked(object sender, EventArgs e)
+        private async void ToolbarItem_Clicked(object? sender, EventArgs e)
         {
             if (BottomSheetBorder.IsVisible)
             {
-                // Bottom Sheet إخفاء الـ 
-                await BottomSheetBorder.TranslateTo(0, 100, 500, Easing.Linear); // انتقال للأسفل
-                //await BottomSheetBorder.FadeTo(0, 500); // تقليل الشفافية
-                BottomSheetBorder.IsVisible = false; // إخفاء المكون
+                await BottomSheetBorder.TranslateToAsync(0, 120, 250, Easing.CubicIn);
+                BottomSheetBorder.IsVisible = false;
             }
             else
             {
-                // Bottom Sheet إظهار الـ
-                BottomSheetBorder.IsVisible = true; // إظهار المكون
-                await BottomSheetBorder.TranslateTo(0, 0, 500, Easing.Linear); // انتقال للأعلى
-                //await BottomSheetBorder.FadeTo(1, 500); // زيادة الشفافية
-            }       
+                BottomSheetBorder.TranslationY = 120;
+                BottomSheetBorder.IsVisible = true;
+                await BottomSheetBorder.TranslateToAsync(0, 0, 250, Easing.CubicOut);
+            }
         }
-        private async void CloseBottomSheet_Clicked(object sender, EventArgs e)
+
+        private async void CloseBottomSheet_Clicked(object? sender, EventArgs e)
         {
-            // Bottom Sheet إخفاء الـ 
-            await BottomSheetBorder.TranslateTo(0, 100, 500, Easing.Linear); // انتقال للأسفل
-            BottomSheetBorder.IsVisible = false; // إخفاء المكون
+            await BottomSheetBorder.TranslateToAsync(0, 120, 250, Easing.CubicIn);
+            BottomSheetBorder.IsVisible = false;
         }
-        /// <summary>
-        /// إنشاء نسخة احتياطية من قاعدة البيانات
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void btnBackUp_Clicked(object sender, EventArgs e)
+
+        private async void btnBackUp_Clicked(object? sender, EventArgs e)
         {
-            //Get user to pick backup location
-            string? backupFolder = await SqliteBackupManager.PickBackupFolderAsync();
-            if (string.IsNullOrEmpty(backupFolder))
+            var dbPath = DBContext.GetDatabasePath();
+            var fileName = $"CostApp_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+            bool backupDone = await SqliteBackupManager.ExportBackupAsync(dbPath, fileName);
+
+            if (backupDone)
             {
-                await DisplayAlert("خطأ", "لم يتم اختيار مكان لحفظ نسخة من قاعدة البيانات ...", "موافق");
+                await DisplayAlertAsync("نسخ احتياطي", "تم إنشاء النسخة الاحتياطية بنجاح.", "موافق");
+            }
+            else
+            {
+                await DisplayAlertAsync("تنبيه", "لم يتم حفظ النسخة الاحتياطية.", "موافق");
+            }
+        }
+
+        private async void btnRestor_Clicked(object? sender, EventArgs e)
+        {
+            var pickedBackupPath = await SqliteBackupManager.PickBackupFileAsync();
+            if (string.IsNullOrEmpty(pickedBackupPath))
                 return;
-            }
-            string backupPath = Path.Combine(backupFolder, GenerateBackupFileName());
-            using (var context = new DBContext())
-            {
-                string databasePath = context.Database.GetDbConnection().DataSource;
-                bool backupDone = await SqliteBackupManager.BackupDatabaseAsync(databasePath, backupPath);
-
-                if (backupDone)
-                {
-                    await DisplayAlert("نسخ قاعدة البيانات", "تم انشاء نسخة من قاعدة البيانات", "موافق");
-                }
-                else
-                {
-                    await DisplayAlert("خطأ", "خطأ في انشاء نسخة من قاعدة البيانات.", "موافق");
-                }
-            }
-        }
-
-        /// <summary>
-        /// استعادة نسخة احتياطية من قاعدة البيانات
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void btnRestor_Clicked(object sender, EventArgs e)
-        {
-            // اختيار ملف النسخة الاحتياطية
-            var backupPath = await SqliteBackupManager.PickBackupFileAsync();
-            string DatabasePath = db.Database.GetDbConnection().DataSource; // مسار قاعدة البيانات الأصلية
-
-            if (string.IsNullOrEmpty(backupPath))
-            {
-                await DisplayAlert("خطأ", "لم يتم العثور على قاعدة البيانات الاحتياطية.", "موافق");
-                return;
-            }
 
             try
             {
-                if (!SqliteBackupManager.IsValidDatabase(backupPath))
-                {
-                    await DisplayAlert("خطأ", "الملف المحدد ليس قاعدة SQLite سليمة.", "موافق");
-                    return;
-                }
+                bool confirm = await DisplayAlertAsync(
+                    "تأكيد الاستعادة",
+                    "سيتم استبدال البيانات الحالية بالنسخة المختارة (مع إنشاء نسخة أمان تلقائية قبل الاستبدال). هل تريد المتابعة؟",
+                    "استعادة",
+                    "إلغاء");
 
-                if (!SchemaComparer.CompareSchemas(backupPath, DatabasePath))
-                {
-                    await DisplayAlert("خطأ", "بنية قاعدة البيانات مختلفة.", "موافق");
+                if (!confirm)
                     return;
-                }
 
-                // Keep a recovery copy of the current data before replacing it.
-                var safetyCopy = Path.Combine(FileSystem.CacheDirectory,
-                    $"CostApp_before_restore_{DateTime.Now:yyyyMMdd_HHmmss}.db");
-                if (!await SqliteBackupManager.BackupDatabaseAsync(DatabasePath, safetyCopy))
+                var (success, message) = await SqliteBackupManager.RestoreDatabaseSafelyAsync(pickedBackupPath);
+                if (success)
                 {
-                    await DisplayAlert("خطأ", "تعذر إنشاء نسخة أمان؛ لم تتم الاستعادة.", "موافق");
-                    return;
-                }
-
-                var restoreDone = await SqliteBackupManager.BackupDatabaseAsync(backupPath, DatabasePath);
-                if (restoreDone)
-                {
-                    db.Dispose();
-                    db = new DBContext();
                     FillData();
-                    await DisplayAlert("نجاح", "تمت استعادة قاعدة البيانات. نسخة الأمان محفوظة مؤقتًا.", "موافق");
+                    await DisplayAlertAsync("نجاح", message, "موافق");
                 }
                 else
                 {
-                    await DisplayAlert("خطأ", $"فشلت الاستعادة. نسخة الأمان: {safetyCopy}", "موافق");
+                    await DisplayAlertAsync("خطأ", message, "موافق");
                 }
             }
-            catch (Exception ex)
+            finally
             {
-                await DisplayAlert("خطأ", $"حدث خطأ أثناء استعادة قاعدة البيانات: {ex.Message}", "موافق");
+                SqliteBackupManager.TryDeleteFile(pickedBackupPath);
             }
-        }
-        /// <summary>
-        /// يولد اسم ملف نسخة احتياطية جديدة بناءً على التاريخ والوقت الحاليين.
-        /// </summary>
-        /// <returns>اسم ملف النسخة الاحتياطية</returns>
-        private static string GenerateBackupFileName()
-        {
-            return $"backup_{DateTime.Now:yyyyMMdd_HHmmss}.db";
         }
     }
 }
-

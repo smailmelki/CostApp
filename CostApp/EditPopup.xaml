@@ -1,30 +1,69 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="CostApp.EditPopup"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}"
-             Size="330,330">
-    <VerticalStackLayout Padding="5">
-        <Label Text="اضافة التكاليف" HeightRequest="50" FontSize="Title"
-               VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
-        <Grid ColumnDefinitions="*,3*" RowDefinitions="35,35,55,auto" Margin="20" RowSpacing="7"
-              FlowDirection="RightToLeft">
-            <Label Grid.Column="0" Grid.Row="0" Text="المبلغ" VerticalTextAlignment="Center"/>
-            <Label Grid.Column="0" Grid.Row="1" Text="التاريخ" VerticalTextAlignment="Center"/>
-            <Label Grid.Column="0" Grid.Row="2" Text="ملاحظات"/>
-            <Label Grid.Column="0" Grid.Row="3" Text="نقل الى :" VerticalTextAlignment="Center" x:Name="lblpicker"/>
-            <Entry Grid.Column="1" Grid.Row="0" x:Name="txtAmount" Placeholder="0,00"
-                   Margin="0" MinimumHeightRequest="35" HeightRequest="35" Keyboard="Numeric"/>
-            <DatePicker Grid.Column="1" Grid.Row="1" x:Name="dtpDate" 
-                        MinimumHeightRequest="35" HeightRequest="35"/>
-            <Editor Grid.Column="1" Grid.Row="2" x:Name="txtNote" Placeholder="Note"/>
-            <Picker Grid.Column="1" Grid.Row="3" x:Name="pickerItems"
-                    ItemDisplayBinding="{Binding Title}"/>
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:CostApp.Models"
+               x:TypeArguments="models:DetailItem"
+               x:Class="CostApp.EditPopup">
+    <Border StrokeShape="RoundRectangle 14"
+            StrokeThickness="0"
+            BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource OffBlack}}">
+        <VerticalStackLayout Padding="18" Spacing="10" WidthRequest="330" FlowDirection="RightToLeft">
+        <Label x:Name="lblHeader"
+               Text="إضافة مصروف"
+               FontSize="20"
+               FontAttributes="Bold"
+               HorizontalTextAlignment="Center" />
+
+        <Grid ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto"
+              ColumnSpacing="12"
+              RowSpacing="10">
+            <Label Grid.Column="0" Grid.Row="0" Text="المبلغ *" VerticalTextAlignment="Center" FontAttributes="Bold" />
+            <Entry Grid.Column="1" Grid.Row="0"
+                   x:Name="txtAmount"
+                   Placeholder="0.00"
+                   HeightRequest="42"
+                   Keyboard="Numeric" />
+
+            <Label Grid.Column="0" Grid.Row="1" Text="التاريخ" VerticalTextAlignment="Center" FontAttributes="Bold" />
+            <DatePicker Grid.Column="1" Grid.Row="1"
+                        x:Name="dtpDate"
+                        HeightRequest="42" />
+
+            <Label Grid.Column="0" Grid.Row="2" Text="ملاحظات" VerticalTextAlignment="Start" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Editor Grid.Column="1" Grid.Row="2"
+                    x:Name="txtNote"
+                    Placeholder="وصف أو ملاحظة (اختياري)"
+                    HeightRequest="76"
+                    MaxLength="250" />
+
+            <Label Grid.Column="0" Grid.Row="3" x:Name="lblpicker" Text="التصنيف" VerticalTextAlignment="Center" FontAttributes="Bold" />
+            <Picker Grid.Column="1" Grid.Row="3"
+                    x:Name="pickerItems"
+                    x:DataType="models:TreeItem"
+                    ItemDisplayBinding="{Binding Title}"
+                    HeightRequest="42" />
         </Grid>
-        <HorizontalStackLayout Spacing="10">
-            <Button x:Name="BtnCancel" Text="الغاء" Clicked="OnCancelClicked" WidthRequest="70"/>
-            <Button x:Name="BtnSave" Text="حفظ" Clicked="OnSaveClicked" WidthRequest="70"/>
-        </HorizontalStackLayout>
-    </VerticalStackLayout>
+
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,6,0,0">
+            <Button Grid.Column="0"
+                    x:Name="BtnCancel"
+                    Text="إلغاء"
+                    Clicked="OnCancelClicked"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    CornerRadius="10"
+                    HeightRequest="44" />
+            <Button Grid.Column="1"
+                    x:Name="BtnSave"
+                    Text="حفظ"
+                    Clicked="OnSaveClicked"
+                    BackgroundColor="SteelBlue"
+                    TextColor="White"
+                    CornerRadius="10"
+                    HeightRequest="44" />
+        </Grid>
+        </VerticalStackLayout>
+    </Border>
 </toolkit:Popup>

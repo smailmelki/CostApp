@@ -1,53 +1,119 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:CostApp.Models"
              x:Class="CostApp.FilterPage"
-             Title="فلترة التكاليف">
-    <Grid RowDefinitions="auto,auto, *, 50">
-        <HorizontalStackLayout Grid.Row="0" FlowDirection="RightToLeft" Spacing="5" Margin="8">
-            <Label Text="من تاريخ:" VerticalOptions="Center"/>
-            <DatePicker x:Name="dtpFrom"/>
-            <Label Text="إلى:" VerticalOptions="Center"/>
-            <DatePicker x:Name="dtpTo"/>
-            <Button x:Name="btnFilter" HeightRequest="28" WidthRequest="80" Padding="0" Text="فلترة" Clicked="btnFilter_Clicked"
+             FlowDirection="RightToLeft"
+             Title="البحث والفلترة">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Padding="10" RowSpacing="8">
+        <!-- Project Indicator -->
+        <Border Grid.Row="0"
+                StrokeShape="RoundRectangle 10"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"
+                Padding="10,6">
+            <Label x:Name="lblProjectName"
+                   FontSize="15"
+                   FontAttributes="Bold"
+                   HorizontalTextAlignment="Center" />
+        </Border>
+
+        <!-- Search & Category Filter -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+            <SearchBar Grid.Column="0"
+                       x:Name="searchBar"
+                       Placeholder="بحث في الملاحظات أو المبلغ..."
+                       TextChanged="OnSearchTextChanged"
+                       SearchButtonPressed="OnSearchPressed" />
+            <Picker Grid.Column="1"
+                    x:Name="pickerCategory"
+                    Title="التصنيف"
+                    x:DataType="models:TreeItem"
+                    ItemDisplayBinding="{Binding Title}"
+                    SelectedIndexChanged="OnCategoryChanged" />
+        </Grid>
+
+        <!-- Date Range Filter -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,*,Auto" ColumnSpacing="6">
+            <Label Grid.Column="0" Text="من:" VerticalOptions="Center" FontAttributes="Bold" />
+            <DatePicker Grid.Column="1" x:Name="dtpFrom" />
+            <Label Grid.Column="2" Text="إلى:" VerticalOptions="Center" FontAttributes="Bold" />
+            <DatePicker Grid.Column="3" x:Name="dtpTo" />
+            <Button Grid.Column="4"
+                    x:Name="btnFilter"
+                    Text="فلترة"
+                    Clicked="btnFilter_Clicked"
                     BackgroundColor="SteelBlue"
                     TextColor="White"
-                    CornerRadius="10"
-                    HorizontalOptions="Center"/>
-        </HorizontalStackLayout>
-        <Grid  Grid.Row="1" FlowDirection="RightToLeft"
-               ColumnDefinitions="*,*,2*" RowDefinitions="20" ColumnSpacing="3">
-            <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="1" Text="المبلغ" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="2" Text="ملاحظات" FontAttributes="Bold" HorizontalOptions="Center" />
+                    CornerRadius="8"
+                    HeightRequest="40"
+                    Padding="14,0" />
         </Grid>
-        <CollectionView x:Name="CollectionFilter" 
-                        Grid.Row="2"
-                        Margin="5"
-                        FlowDirection="RightToLeft"
-                        EmptyView="No items to display">
+
+        <!-- Table Header -->
+        <Grid Grid.Row="3"
+              ColumnDefinitions="1.1*,1.2*,1.2*,1.5*"
+              ColumnSpacing="4"
+              Padding="6,4"
+              BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray900}}">
+            <Label Grid.Column="0" Text="التاريخ" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="1" Text="التصنيف" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="2" Text="المبلغ" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+            <Label Grid.Column="3" Text="ملاحظات" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+        </Grid>
+
+        <!-- Results -->
+        <CollectionView x:Name="CollectionFilter"
+                        Grid.Row="4"
+                        EmptyView="لا توجد سجلات مطابقة">
             <CollectionView.ItemsLayout>
-                <!-- التحكم بالمسافات بين العناصر -->
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
             </CollectionView.ItemsLayout>
-
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <!-- إضافة Margin حول كل عنصر -->
-                    <ContentView Margin="1" Padding="1">
-
-                        <Grid ColumnDefinitions="*,*,2*" RowDefinitions="25" ColumnSpacing="3">
-                            <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}" HorizontalOptions="Center"/>
-                            <Label Grid.Column="1" Text="{Binding Amount, StringFormat='{}{0:N2} دج'}" HorizontalOptions="Center"/>
-                            <Label Grid.Column="2" Text="{Binding Note}" HorizontalOptions="Center"/>
+                <DataTemplate x:DataType="models:DetailItem">
+                    <Border StrokeShape="RoundRectangle 6"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                            Padding="6,8">
+                        <Grid ColumnDefinitions="1.1*,1.2*,1.2*,1.5*" ColumnSpacing="4">
+                            <Label Grid.Column="0"
+                                   Text="{Binding Date, StringFormat='{0:dd-MM-yyyy}'}"
+                                   FontSize="13"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding CategoryTitle}"
+                                   FontSize="13"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center"
+                                   LineBreakMode="TailTruncation" />
+                            <Label Grid.Column="2"
+                                   Text="{Binding Amount, StringFormat='{}{0:N2} دج'}"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center" />
+                            <Label Grid.Column="3"
+                                   Text="{Binding Note}"
+                                   FontSize="13"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalTextAlignment="Center"
+                                   LineBreakMode="TailTruncation" />
                         </Grid>
-
-                    </ContentView>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        <Border Grid.Row="3" Margin="10">
-            <Label x:Name="lblTotal" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="16"/>
+
+        <!-- Total Summary -->
+        <Border Grid.Row="5"
+                StrokeShape="RoundRectangle 10"
+                Stroke="SteelBlue"
+                Padding="10,8">
+            <Label x:Name="lblTotal"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   FontAttributes="Bold"
+                   FontSize="16" />
         </Border>
     </Grid>
 </ContentPage>
