@@ -67,7 +67,7 @@ namespace CostApp
         {
             if (!TrySetData())
             {
-                await DisplayAlert("بيانات غير صحيحة",
+                await Shell.Current.DisplayAlert("بيانات غير صحيحة",
                     "أدخل مبلغًا رقميًا أكبر من صفر، مع استخدام الفاصلة العشرية المناسبة.", "موافق");
                 return;
             }
